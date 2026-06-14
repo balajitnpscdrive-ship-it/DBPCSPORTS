@@ -13,7 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Sports Day"/>
-  <link rel="apple-touch-icon" href="icon.svg"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
@@ -355,20 +355,44 @@
   <!-- hidden audio element -->
   <audio id="bg-music" loop preload="auto"></audio>
 
-  <!-- Score cards -->
-  <div class="scores-wrap">
-    <div class="rank-banner" id="rank-banner">🏟️ LIVE STANDINGS</div>
-    <div class="score-grid" id="score-grid"></div>
+  <!-- Slides Carousel Wrapper -->
+  <div class="slides-wrapper" id="slides-wrapper">
+  
+    <!-- Slide 1: Standings -->
+    <div class="slide-section active" id="slide-standings">
+      <div class="scores-wrap" style="padding: 1.5rem 0 1rem 0;">
+        <div class="rank-banner">🏟️ LIVE STANDINGS</div>
+        <div class="score-grid" id="score-grid"></div>
+      </div>
+      
+      <div class="bars-wrap" id="bars-wrap" style="max-width:1100px;margin:0 auto 2rem;padding:1.5rem 2rem;">
+        <h3>📊 Points Breakdown</h3>
+        <div id="bar-rows"></div>
+      </div>
+    </div>
+
+    <!-- Slide 2: Podium (Winners & Runners) -->
+    <div class="slide-section" id="slide-podium">
+      <div class="rank-banner" style="margin-bottom: 1.2rem;">🏆 EVENT WINNERS PODIUM</div>
+      <div class="podium-controls">
+        <label for="podium-select">Select Event:</label>
+        <select id="podium-select" onchange="onPodiumSelectChange(this.value)">
+          <option value="">Latest Event</option>
+        </select>
+      </div>
+      <div class="podium-container" id="podium-container"></div>
+    </div>
+
+    <!-- Slide 3: Achievements Grid -->
+    <div class="slide-section" id="slide-achievements">
+      <div class="rank-banner" style="margin-bottom: 1.2rem;">✨ HOUSE SPECIAL ACHIEVEMENTS</div>
+      <div class="achievements-grid" id="achievements-grid"></div>
+    </div>
+
   </div>
 
-  <!-- Bar chart -->
-  <div class="bars-wrap" id="bars-wrap" style="max-width:980px;margin:0 auto 2rem;padding:1.5rem 2rem;">
-    <h3>📊 Points Breakdown</h3>
-    <div id="bar-rows"></div>
-  </div>
-
-  <!-- Bottom panels -->
-  <div class="bottom-grid">
+  <!-- Bottom panels (Comparison & Recent Results) -->
+  <div class="bottom-grid" style="margin-top: 1rem;">
     <div class="panel">
       <h3>🎯 Recent Results</h3>
       <div id="recent-list"></div>
@@ -451,13 +475,308 @@ let lastResultKey = null;
 let scores=[], houses=[], results=[];
 let musicUrl = '', musicPlaying = false;
 let prevPoints = {};  // track point changes for animation
+let currentSlide = 0;
+let slideTimer = null;
+let userSelectedPodiumEvent = '';
+
+// ─────────────────────────────────────────────
+//  Web Audio API Synthesizer (Drumroll, Fanfare, Swoosh)
+// ─────────────────────────────────────────────
+const SFX = {
+  ctx: null,
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  },
+  swoosh() {
+    try {
+      this.init();
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.35);
+    } catch(e) {}
+  },
+  drumroll(duration = 2.5) {
+    try {
+      this.init();
+      const bufferSize = this.ctx.sampleRate * duration;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        const tremolo = 0.5 + 0.5 * Math.sin(i * 0.005);
+        data[i] = (Math.random() * 2 - 1) * tremolo * 0.12;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 350;
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.4, this.ctx.currentTime + duration - 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+      noise.start();
+      return noise;
+    } catch(e) { return null; }
+  },
+  fanfare() {
+    try {
+      this.init();
+      const now = this.ctx.currentTime;
+      const notes = [261.63, 329.63, 392.00, 523.25];
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+        osc.frequency.linearRampToValueAtTime(freq + 8, now + idx * 0.08 + 0.4);
+        osc.frequency.linearRampToValueAtTime(freq - 8, now + idx * 0.08 + 0.8);
+        gain.gain.setValueAtTime(0, now + idx * 0.08);
+        gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.08 + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 1.6);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 1.6);
+      });
+    } catch(e) {}
+  }
+};
+
+// ─────────────────────────────────────────────
+//  Slides Carousel Management
+// ─────────────────────────────────────────────
+function startSlideshow() {
+  if (slideTimer) clearInterval(slideTimer);
+  slideTimer = setInterval(nextSlide, 12000);
+}
+
+function stopSlideshow() {
+  if (slideTimer) clearInterval(slideTimer);
+}
+
+function nextSlide() {
+  if (document.getElementById('winner-overlay').classList.contains('show')) return;
+  const slides = ['slide-standings', 'slide-podium', 'slide-achievements'];
+  SFX.swoosh();
+  document.getElementById(slides[currentSlide]).classList.remove('active');
+  currentSlide = (currentSlide + 1) % slides.length;
+  document.getElementById(slides[currentSlide]).classList.add('active');
+}
+
+// ─────────────────────────────────────────────
+//  Podium Calculation & Rendering
+// ─────────────────────────────────────────────
+function populatePodiumSelect() {
+  const select = document.getElementById('podium-select');
+  const previousValue = select.value;
+  const eventsWithResults = [...new Set(results.map(r => JSON.stringify({id: r.EventID, name: r.EventName})))].map(s => JSON.parse(s));
+  select.innerHTML = '<option value="">Latest Event</option>';
+  eventsWithResults.forEach(e => {
+    select.innerHTML += `<option value="${e.id}">${e.name}</option>`;
+  });
+  if (previousValue) select.value = previousValue;
+}
+
+function onPodiumSelectChange(eventId) {
+  userSelectedPodiumEvent = eventId;
+  renderPodium();
+}
+
+function renderPodium() {
+  const container = document.getElementById('podium-container');
+  let targetEventId = userSelectedPodiumEvent;
+  if (!targetEventId && results.length) {
+    targetEventId = results[results.length - 1].EventID;
+  }
+  if (!targetEventId) {
+    container.innerHTML = '<p class="text-muted" style="text-align:center;padding:5rem 0;width:100%">No event results recorded yet to show on podium.</p>';
+    return;
+  }
+  const eventResults = results.filter(r => r.EventID === targetEventId);
+  const eventName = eventResults.length ? eventResults[0].EventName : '';
+  const p1 = eventResults.find(r => r.Position === '1st' || r.Position === 'Winner');
+  const p2 = eventResults.find(r => r.Position === '2nd' || r.Position === 'RunnerUp');
+  const p3 = eventResults.find(r => r.Position === '3rd' || r.Position === 'SecondRunnerUp');
+  if (!p1 && !p2 && !p3) {
+    container.innerHTML = `<p class="text-muted" style="text-align:center;padding:5rem 0;width:100%">No winners recorded for event: ${eventName}</p>`;
+    return;
+  }
+  const renderStep = (r, rank, rankClass) => {
+    if (!r) {
+      return `
+      <div class="podium-step ${rankClass}">
+        <div class="podium-user" style="opacity: 0.3">
+          <div class="podium-photo-wrap" style="--hc:#555;--hc-glow:rgba(255,255,255,0.05)">
+            <img class="podium-photo" src="" alt="">
+          </div>
+          <div class="podium-name">-</div>
+          <div class="podium-meta">Unassigned</div>
+        </div>
+        <div class="podium-block"><span class="num">${rank}</span></div>
+      </div>`;
+    }
+    const col = houseColor(r.House);
+    const glow = col + '55';
+    const photo = r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '';
+    const name = r.StudentName || r.House + ' Team';
+    const dept = r.Department || '';
+    return `
+    <div class="podium-step ${rankClass}">
+      <div class="podium-user">
+        <div class="podium-photo-wrap" style="--hc:${col}; --hc-glow:${glow}">
+          <img class="podium-photo" src="${photo}" alt="${name}" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';this.src='';this.style.minHeight='100%'">
+        </div>
+        <div class="podium-name">${name}</div>
+        <div class="podium-meta">${r.House}${dept ? ' · ' + dept : ''}</div>
+      </div>
+      <div class="podium-block"><span class="num">${rank}</span></div>
+    </div>`;
+  };
+  container.innerHTML = `
+    <div style="width:100%;text-align:center;margin-top:-1.5rem;font-weight:700;color:var(--accent);font-size:0.95rem;letter-spacing:1px">${eventName.toUpperCase()}</div>
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:1.5rem;width:100%;margin-top:1.5rem">
+      ${renderStep(p2, '2', 'pos-2')}
+      ${renderStep(p1, '1', 'pos-1')}
+      ${renderStep(p3, '3', 'pos-3')}
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────
+//  Achievements Calculation & Rendering
+// ─────────────────────────────────────────────
+function renderAchievements() {
+  const grid = document.getElementById('achievements-grid');
+  if (!scores.length) {
+    grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:5rem 0">No standing data available.</p>';
+    return;
+  }
+  const sorted = [...scores].sort((a, b) => Number(b.Points) - Number(a.Points));
+  const leader = sorted[0];
+  const leaderCol = houseColor(leader.House);
+  const firstsCount = {};
+  results.forEach(r => {
+    const isGold = r.Position === '1st' || r.Position === 'Winner';
+    const isIndiv = !(r.IsTeam === true || r.IsTeam === 'true' || ['HouseDecoration','MarchPast','Discipline'].includes(r.EventName));
+    if (isGold && isIndiv && r.House) {
+      firstsCount[r.House] = (firstsCount[r.House] || 0) + 1;
+    }
+  });
+  let sweepHouse = '-';
+  let sweepCount = 0;
+  Object.entries(firstsCount).forEach(([h, count]) => {
+    if (count > sweepCount) {
+      sweepCount = count;
+      sweepHouse = h;
+    }
+  });
+  const mpWinner = results.find(r => r.EventName === 'MarchPast' && (r.Position === 'Winner' || r.Position === '1st'));
+  const mpHouseName = mpWinner ? mpWinner.House : 'TBD';
+  const decWinner = results.find(r => r.EventName === 'HouseDecoration' && (r.Position === 'Winner' || r.Position === '1st'));
+  const decHouseName = decWinner ? decWinner.House : 'TBD';
+  let starUser = null;
+  for (let i = results.length - 1; i >= 0; i--) {
+    const r = results[i];
+    const isGold = r.Position === '1st' || r.Position === 'Winner';
+    const isIndiv = !(r.IsTeam === true || r.IsTeam === 'true' || ['HouseDecoration','MarchPast','Discipline'].includes(r.EventName));
+    if (isGold && isIndiv && r.StudentName) {
+      starUser = r;
+      break;
+    }
+  }
+  let starHTML = `
+    <div class="achieve-card">
+      <div class="achieve-icon">⭐</div>
+      <div class="achieve-details">
+        <div class="achieve-title">Star Performer</div>
+        <div class="achieve-name">-</div>
+        <div class="achieve-desc">No individual gold recorded yet</div>
+      </div>
+    </div>`;
+  if (starUser) {
+    const starPhoto = starUser.PhotoUrl ? getGoogleDriveThumbUrl(starUser.PhotoUrl) : '';
+    const starName = starUser.StudentName;
+    const starHouse = starUser.House;
+    const starEvent = starUser.EventName;
+    starHTML = `
+      <div class="achieve-card" style="border-color:${houseColor(starHouse)}44">
+        <div class="achieve-pic-wrap" style="border-color:${houseColor(starHouse)}">
+          <img class="achieve-pic" src="${starPhoto}" alt="${starName}" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';this.src='';">
+        </div>
+        <div class="achieve-details">
+          <div class="achieve-title">Star Performer</div>
+          <div class="achieve-name">${starName}</div>
+          <div class="achieve-desc">${starHouse} · Gold in ${starEvent}</div>
+        </div>
+      </div>`;
+  }
+  grid.innerHTML = `
+    <div class="achieve-card" style="border-color:${leaderCol}55">
+      <div class="achieve-icon">🏆</div>
+      <div class="achieve-details">
+        <div class="achieve-title">Overall Leader</div>
+        <div class="achieve-name" style="color:${leaderCol}">${leader.House}</div>
+        <div class="achieve-desc">Leading with ${leader.Points} total points</div>
+      </div>
+    </div>
+    <div class="achieve-card" style="${sweepHouse !== '-' ? 'border-color:' + houseColor(sweepHouse) + '55' : ''}">
+      <div class="achieve-icon">🥇</div>
+      <div class="achieve-details">
+        <div class="achieve-title">Medal Sweep</div>
+        <div class="achieve-name" style="${sweepHouse !== '-' ? 'color:' + houseColor(sweepHouse) : ''}">${sweepHouse}</div>
+        <div class="achieve-desc">${sweepCount ? sweepCount + ' individual gold medals won' : 'No individual gold medals yet'}</div>
+      </div>
+    </div>
+    ${starHTML}
+    <div class="achieve-card" style="${mpHouseName !== 'TBD' ? 'border-color:' + houseColor(mpHouseName) + '55' : ''}">
+      <div class="achieve-icon">🥁</div>
+      <div class="achieve-details">
+        <div class="achieve-title">March Past Champion</div>
+        <div class="achieve-name" style="${mpHouseName !== 'TBD' ? 'color:' + houseColor(mpHouseName) : ''}">${mpHouseName}</div>
+        <div class="achieve-desc">${mpHouseName !== 'TBD' ? 'Awarded March Past honors' : 'March Past results pending'}</div>
+      </div>
+    </div>
+    <div class="achieve-card" style="${decHouseName !== 'TBD' ? 'border-color:' + houseColor(decHouseName) + '55' : ''}">
+      <div class="achieve-icon">🎨</div>
+      <div class="achieve-details">
+        <div class="achieve-title">Creative Decoration</div>
+        <div class="achieve-name" style="${decHouseName !== 'TBD' ? 'color:' + houseColor(decHouseName) : ''}">${decHouseName}</div>
+        <div class="achieve-desc">${decHouseName !== 'TBD' ? 'Winner of House Decoration' : 'Decoration results pending'}</div>
+      </div>
+    </div>
+  `;
+}
 
 // ─────────────────────────────────────────────
 //  Init
 // ─────────────────────────────────────────────
 (async function init() {
   await refresh();
+  startSlideshow();
   setInterval(refresh, 10_000);
+  
+  // Audio activation on first click
+  const activateAudio = () => {
+    SFX.init();
+    document.removeEventListener('click', activateAudio);
+  };
+  document.addEventListener('click', activateAudio);
 })();
 
 // ─────────────────────────────────────────────
@@ -487,6 +806,12 @@ async function refresh() {
     renderBars();
     renderChart();
     renderRecent();
+    
+    // Refresh podium and achievements slides
+    populatePodiumSelect();
+    renderPodium();
+    renderAchievements();
+
     document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
 
     // Winner announcement
@@ -654,19 +979,35 @@ function renderRecent() {
 //  Winner overlay
 // ─────────────────────────────────────────────
 function showWinner(r) {
+  stopSlideshow();
+  
+  // Play synthesized drumroll
+  const drumrollNode = SFX.drumroll(2.2);
+  
   const col = houseColor(r.House);
-  const posLabel = { '1st':'🥇 1st Place', '2nd':'🥈 2nd Place', '3rd':'🥉 3rd Place' };
+  const posLabel = { '1st':'🥇 1st Place', '2nd':'🥈 2nd Place', '3rd':'🥉 3rd Place', 'Winner':'🥇 Winner', 'RunnerUp':'🥈 Runner Up', 'SecondRunnerUp':'🥉 2nd Runner Up' };
+  
   document.getElementById('w-badge').textContent = posLabel[r.Position] || r.Position;
   document.getElementById('w-badge').style.background = col;
-  document.getElementById('w-name').textContent  = r.StudentName;
+  document.getElementById('w-name').textContent  = r.StudentName || r.House + ' Team';
   document.getElementById('w-meta').textContent  = `${r.EventName}  ·  ${r.House}${r.Department ? '  ·  ' + r.Department : ''}`;
   document.getElementById('w-pts').textContent   = '+' + r.Points + ' Points';
   document.getElementById('winner-photo').src    = getGoogleDriveThumbUrl(r.PhotoUrl || '');
-  document.getElementById('winner-overlay').classList.add('show');
-  fireConfetti();
-  setTimeout(closeWinner, 9000);
+  
+  // Wait for drumroll to finish before showing card and playing fanfare
+  setTimeout(() => {
+    document.getElementById('winner-overlay').classList.add('show');
+    SFX.fanfare();
+    fireConfetti();
+  }, 2200);
+  
+  setTimeout(closeWinner, 11000);
 }
-function closeWinner() { document.getElementById('winner-overlay').classList.remove('show'); }
+
+function closeWinner() {
+  document.getElementById('winner-overlay').classList.remove('show');
+  startSlideshow();
+}
 
 // ─────────────────────────────────────────────
 //  Background music
