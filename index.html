@@ -202,7 +202,11 @@
   function redirect(role, data) {
     data = data || {};
     const gasUrl = getGasUrl();
-    const query = gasUrl ? `?gasUrl=${encodeURIComponent(gasUrl)}` : '';
+    const sessionStr = JSON.stringify(Session.get() || { ...data, loginRole: role, gasUrl });
+    let query = `?session=${encodeURIComponent(sessionStr)}`;
+    if (gasUrl) {
+      query += `&gasUrl=${encodeURIComponent(gasUrl)}`;
+    }
     if (role === 'committee') {
       location.href = 'committee.html' + query;
     } else if (role === 'house' || data.houseName) {
