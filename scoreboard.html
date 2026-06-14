@@ -318,6 +318,134 @@
       .bars-wrap,.bottom-grid{padding:0 1rem;}
       .bars-wrap{padding:1rem;}
     }
+
+    /* Viewport-locked 16:9 layout for 75" TV */
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden !important;
+    }
+    .page {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .slides-wrapper {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      width: 100%;
+      max-width: 100vw;
+      padding: 0.5rem 2rem 1rem 2rem;
+    }
+    .slide-section {
+      position: absolute;
+      inset: 0.5rem 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      transform: scale(0.98);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .slide-section.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: scale(1);
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* 16:9 Column Grid Layout */
+    .slide-grid-2 {
+      display: grid;
+      grid-template-columns: 58% 42%;
+      gap: 2rem;
+      width: 100%;
+      height: 100%;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+    .slide-col-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+    }
+    .slide-col-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+    }
+    .panel.h-full {
+      height: 100%;
+    }
+    
+    /* Star Performer Profile Card Styles */
+    .star-profile-card {
+      background: var(--glass);
+      border: 2px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 2.2rem;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+    .star-profile-card:hover {
+      transform: scale(1.02);
+    }
+    .star-profile-photo-wrap {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 5px solid var(--accent);
+      overflow: hidden;
+      margin: 0 auto 1.5rem;
+      background: #111;
+    }
+    .star-profile-photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .star-profile-name {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 1.8rem;
+      margin-bottom: 0.4rem;
+      color: var(--text);
+    }
+    .star-profile-meta {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    .star-profile-achievement {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+      color: var(--accent);
+      padding: 0.6rem 1.4rem;
+      border-radius: 99px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -360,50 +488,68 @@
   
     <!-- Slide 1: Standings -->
     <div class="slide-section active" id="slide-standings">
-      <div class="scores-wrap" style="padding: 1.5rem 0 1rem 0;">
-        <div class="rank-banner">🏟️ LIVE STANDINGS</div>
-        <div class="score-grid" id="score-grid"></div>
-      </div>
-      
-      <div class="bars-wrap" id="bars-wrap" style="max-width:1100px;margin:0 auto 2rem;padding:1.5rem 2rem;">
-        <h3>📊 Points Breakdown</h3>
-        <div id="bar-rows"></div>
+      <div class="slide-grid-2">
+        <!-- Left: Standings -->
+        <div class="slide-col-left">
+          <div class="rank-banner">🏟️ LIVE STANDINGS</div>
+          <div class="score-grid" id="score-grid"></div>
+        </div>
+        <!-- Right: Breakdown -->
+        <div class="slide-col-right">
+          <div class="panel h-full" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <h3>📊 Points Breakdown</h3>
+              <div id="bar-rows" style="margin-top: 0.5rem;"></div>
+            </div>
+            <div style="margin-top: 1rem; flex: 1; min-height: 0; display:flex; flex-direction:column;">
+              <h3>📈 Comparison</h3>
+              <div id="chart-wrap" style="flex:1; min-height:0; margin-top:0.5rem;"><canvas id="chart-bar"></canvas></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Slide 2: Podium (Winners & Runners) -->
     <div class="slide-section" id="slide-podium">
-      <div class="rank-banner" style="margin-bottom: 1.2rem;">🏆 EVENT WINNERS PODIUM</div>
-      <div class="podium-controls">
-        <label for="podium-select">Select Event:</label>
-        <select id="podium-select" onchange="onPodiumSelectChange(this.value)">
-          <option value="">Latest Event</option>
-        </select>
+      <div class="slide-grid-2">
+        <!-- Left: Podium -->
+        <div class="slide-col-left">
+          <div class="rank-banner">🏆 EVENT WINNERS PODIUM</div>
+          <div class="podium-controls">
+            <label for="podium-select">Select Event:</label>
+            <select id="podium-select" onchange="onPodiumSelectChange(this.value)">
+              <option value="">Latest Event</option>
+            </select>
+          </div>
+          <div class="podium-container" id="podium-container"></div>
+        </div>
+        <!-- Right: Recent results -->
+        <div class="slide-col-right">
+          <div class="panel h-full" style="display:flex; flex-direction:column; overflow:hidden;">
+            <h3>🎯 Recent Results</h3>
+            <div id="recent-list" style="flex:1; overflow-y:auto; margin-top:0.5rem;"></div>
+          </div>
+        </div>
       </div>
-      <div class="podium-container" id="podium-container"></div>
     </div>
 
     <!-- Slide 3: Achievements Grid -->
     <div class="slide-section" id="slide-achievements">
-      <div class="rank-banner" style="margin-bottom: 1.2rem;">✨ HOUSE SPECIAL ACHIEVEMENTS</div>
-      <div class="achievements-grid" id="achievements-grid"></div>
+      <div class="slide-grid-2">
+        <!-- Left: Achievements -->
+        <div class="slide-col-left">
+          <div class="rank-banner">✨ HOUSE SPECIAL ACHIEVEMENTS</div>
+          <div class="achievements-grid" id="achievements-grid"></div>
+        </div>
+        <!-- Right: Star Performer Details -->
+        <div class="slide-col-right" id="star-performer-detail-panel">
+          <!-- Rendered dynamically in renderAchievements() -->
+        </div>
+      </div>
     </div>
 
   </div>
-
-  <!-- Bottom panels (Comparison & Recent Results) -->
-  <div class="bottom-grid" style="margin-top: 1rem;">
-    <div class="panel">
-      <h3>🎯 Recent Results</h3>
-      <div id="recent-list"></div>
-    </div>
-    <div class="panel">
-      <h3>📈 Comparison</h3>
-      <div id="chart-wrap"><canvas id="chart-bar"></canvas></div>
-    </div>
-  </div>
-
-</div>
 
 <!-- Winner overlay -->
 <div class="winner-overlay" id="winner-overlay">
@@ -596,6 +742,12 @@ function populatePodiumSelect() {
 function onPodiumSelectChange(eventId) {
   userSelectedPodiumEvent = eventId;
   renderPodium();
+  if (eventId) {
+    stopSlideshow();
+    toast('Slideshow paused. Select "Latest Event" to resume.', 'info');
+  } else {
+    startSlideshow();
+  }
 }
 
 function renderPodium() {
@@ -663,13 +815,18 @@ function renderPodium() {
 // ─────────────────────────────────────────────
 function renderAchievements() {
   const grid = document.getElementById('achievements-grid');
+  const starPanel = document.getElementById('star-performer-detail-panel');
+  
   if (!scores.length) {
     grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:5rem 0">No standing data available.</p>';
+    if (starPanel) starPanel.innerHTML = '';
     return;
   }
+  
   const sorted = [...scores].sort((a, b) => Number(b.Points) - Number(a.Points));
   const leader = sorted[0];
   const leaderCol = houseColor(leader.House);
+  
   const firstsCount = {};
   results.forEach(r => {
     const isGold = r.Position === '1st' || r.Position === 'Winner';
@@ -678,6 +835,7 @@ function renderAchievements() {
       firstsCount[r.House] = (firstsCount[r.House] || 0) + 1;
     }
   });
+  
   let sweepHouse = '-';
   let sweepCount = 0;
   Object.entries(firstsCount).forEach(([h, count]) => {
@@ -686,10 +844,13 @@ function renderAchievements() {
       sweepHouse = h;
     }
   });
+  
   const mpWinner = results.find(r => r.EventName === 'MarchPast' && (r.Position === 'Winner' || r.Position === '1st'));
   const mpHouseName = mpWinner ? mpWinner.House : 'TBD';
   const decWinner = results.find(r => r.EventName === 'HouseDecoration' && (r.Position === 'Winner' || r.Position === '1st'));
   const decHouseName = decWinner ? decWinner.House : 'TBD';
+  
+  // Calculate Star Performer
   let starUser = null;
   for (let i = results.length - 1; i >= 0; i--) {
     const r = results[i];
@@ -700,32 +861,8 @@ function renderAchievements() {
       break;
     }
   }
-  let starHTML = `
-    <div class="achieve-card">
-      <div class="achieve-icon">⭐</div>
-      <div class="achieve-details">
-        <div class="achieve-title">Star Performer</div>
-        <div class="achieve-name">-</div>
-        <div class="achieve-desc">No individual gold recorded yet</div>
-      </div>
-    </div>`;
-  if (starUser) {
-    const starPhoto = starUser.PhotoUrl ? getGoogleDriveThumbUrl(starUser.PhotoUrl) : '';
-    const starName = starUser.StudentName;
-    const starHouse = starUser.House;
-    const starEvent = starUser.EventName;
-    starHTML = `
-      <div class="achieve-card" style="border-color:${houseColor(starHouse)}44">
-        <div class="achieve-pic-wrap" style="border-color:${houseColor(starHouse)}">
-          <img class="achieve-pic" src="${starPhoto}" alt="${starName}" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';this.src='';">
-        </div>
-        <div class="achieve-details">
-          <div class="achieve-title">Star Performer</div>
-          <div class="achieve-name">${starName}</div>
-          <div class="achieve-desc">${starHouse} · Gold in ${starEvent}</div>
-        </div>
-      </div>`;
-  }
+  
+  // Render Left Side: Achievements Grid (4 items)
   grid.innerHTML = `
     <div class="achieve-card" style="border-color:${leaderCol}55">
       <div class="achieve-icon">🏆</div>
@@ -743,7 +880,6 @@ function renderAchievements() {
         <div class="achieve-desc">${sweepCount ? sweepCount + ' individual gold medals won' : 'No individual gold medals yet'}</div>
       </div>
     </div>
-    ${starHTML}
     <div class="achieve-card" style="${mpHouseName !== 'TBD' ? 'border-color:' + houseColor(mpHouseName) + '55' : ''}">
       <div class="achieve-icon">🥁</div>
       <div class="achieve-details">
@@ -761,6 +897,38 @@ function renderAchievements() {
       </div>
     </div>
   `;
+  
+  // Render Right Side: Star Performer Profile Panel
+  if (starPanel) {
+    if (starUser) {
+      const starPhoto = starUser.PhotoUrl ? getGoogleDriveThumbUrl(starUser.PhotoUrl) : '';
+      const starName = starUser.StudentName;
+      const starHouse = starUser.House;
+      const starEvent = starUser.EventName;
+      const starDept = starUser.Department || '';
+      const col = houseColor(starHouse);
+      
+      starPanel.innerHTML = `
+        <div class="star-profile-card" style="border-color:${col}66; box-shadow: 0 0 35px ${col}22; width: 100%;">
+          <div style="font-size:0.75rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:2px; margin-bottom:0.8rem;">🌟 Star Performer 🌟</div>
+          <div class="star-profile-photo-wrap" style="border-color:${col}; box-shadow: 0 0 25px ${col}66;">
+            <img src="${starPhoto}" alt="${starName}" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';this.src='';">
+          </div>
+          <div class="star-profile-name">${starName}</div>
+          <div class="star-profile-meta">${starDept ? starDept + ' · ' : ''}<span style="color:${col}; font-weight:800;">${starHouse}</span></div>
+          <div class="star-profile-achievement">🏆 Gold Medalist – ${starEvent}</div>
+        </div>
+      `;
+    } else {
+      starPanel.innerHTML = `
+        <div class="star-profile-card" style="opacity: 0.5; width: 100%;">
+          <div style="font-size:2.5rem; margin-bottom:1rem;">⭐</div>
+          <div class="star-profile-name">Star Performer</div>
+          <div class="star-profile-meta">No individual gold recorded yet</div>
+        </div>
+      `;
+    }
+  }
 }
 
 // ─────────────────────────────────────────────
