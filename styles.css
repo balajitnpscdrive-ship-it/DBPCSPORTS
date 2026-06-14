@@ -387,3 +387,247 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .score-cards { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── PWA Live Scoreboard Enhancements ─────────────── */
+.slides-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: 520px;
+}
+.slide-section {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: scale(0.97) translateY(10px);
+  display: flex;
+  flex-direction: column;
+}
+.slide-section.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1) translateY(0);
+  position: relative;
+}
+
+/* 3D Podium Layout */
+.podium-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 3.5rem;
+  min-height: 340px;
+}
+.podium-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 180px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: podiumFadeIn 0.6s ease forwards;
+}
+.podium-step.pos-1 { animation-delay: 0.1s; }
+.podium-step.pos-2 { animation-delay: 0.3s; }
+.podium-step.pos-3 { animation-delay: 0.5s; }
+
+@keyframes podiumFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.podium-block {
+  width: 100%;
+  position: relative;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-bottom: none;
+}
+.podium-step.pos-1 .podium-block {
+  height: 170px;
+  background: linear-gradient(180deg, hsl(45, 90%, 45%), hsl(45, 90%, 25%));
+  border-color: hsl(45, 90%, 55%) 55;
+}
+.podium-step.pos-2 .podium-block {
+  height: 125px;
+  background: linear-gradient(180deg, hsl(220, 10%, 60%), hsl(220, 10%, 35%));
+  border-color: hsl(220, 10%, 75%) 55;
+}
+.podium-step.pos-3 .podium-block {
+  height: 95px;
+  background: linear-gradient(180deg, hsl(25, 75%, 45%), hsl(25, 75%, 25%));
+  border-color: hsl(25, 75%, 55%) 55;
+}
+
+.podium-block .num {
+  font-family: 'Outfit', sans-serif;
+  font-size: 5.5rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.18);
+  line-height: 1;
+}
+
+.podium-user {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.podium-photo-wrap {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 4px solid var(--hc, #ccc);
+  box-shadow: 0 0 25px var(--hc-glow, rgba(255,255,255,0.2));
+  overflow: hidden;
+  margin: 0 auto 0.6rem;
+  background: #111;
+  position: relative;
+}
+.podium-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.podium-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  margin-bottom: 0.2rem;
+  white-space: nowrap;
+}
+.podium-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Event selection panel */
+.podium-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  padding: 0.6rem 1.5rem;
+  border-radius: 99px;
+  margin: 0 auto 1.5rem;
+  width: fit-content;
+}
+.podium-controls label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.podium-controls select {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Achievements Grid */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+.achieve-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease, border-color 0.3s;
+}
+.achieve-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,255,255,0.12);
+}
+.achieve-icon {
+  font-size: 3.2rem;
+  filter: drop-shadow(0 0 12px var(--accent));
+  line-height: 1;
+}
+.achieve-details {
+  flex: 1;
+  min-width: 0;
+}
+.achieve-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+.achieve-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.achieve-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+/* Achievement card picture (e.g. Star Performer) */
+.achieve-pic-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #111;
+}
+.achieve-pic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media(max-width: 768px) {
+  .podium-container {
+    gap: 0.8rem;
+    min-height: 280px;
+    margin-top: 2rem;
+  }
+  .podium-step {
+    width: 110px;
+  }
+  .podium-photo-wrap {
+    width: 60px;
+    height: 60px;
+  }
+  .podium-name {
+    font-size: 0.85rem;
+  }
+  .podium-meta {
+    font-size: 0.7rem;
+  }
+  .podium-step.pos-1 .podium-block { height: 120px; }
+  .podium-step.pos-2 .podium-block { height: 90px; }
+  .podium-step.pos-3 .podium-block { height: 70px; }
+  .podium-block .num { font-size: 3.5rem; }
+  .slides-wrapper { min-height: 480px; }
+}
