@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sports Day – Login</title>
+  <meta name="description" content="Sports Day Management System – Login"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet"/>
+  
+  <!-- PWA Support -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#f59e0b"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Sports Day"/>
+  <link rel="apple-touch-icon" href="icon.svg"/>
+</head>
+<body>
+<div class="login-bg">
+  <div class="login-box card">
+    <div class="login-logo">
+      <img id="school-logo" class="school-logo" src="" alt="Logo" onerror="this.style.display='none'" />
+      <h1 id="college-name">Sports Day</h1>
+      <p id="event-title">Management System</p>
+    </div>
+
+    <!-- Role Tabs -->
+    <div class="role-tabs">
+      <div class="role-tab active" id="tab-committee" onclick="switchRole('committee')">🏆 Committee</div>
+      <div class="role-tab" id="tab-house" onclick="switchRole('house')">🏠 House In‑Charge</div>
+      <div class="role-tab" id="tab-scoreboard" onclick="goScoreboard()">📊 Scoreboard</div>
+    </div>
+
+    <!-- GAS URL setup (first time setup or override) -->
+    <div id="gas-setup" class="mb-2" style="display:none">
+      <div class="form-group">
+        <label>Apps Script Web App URL</label>
+        <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec"/>
+      </div>
+      <button class="btn btn-secondary btn-sm w-full" onclick="saveGasUrl()">Save URL</button>
+      <hr style="border-color:var(--glass-border);margin:1rem 0"/>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label>Email / Username</label>
+        <input type="text" id="login-email" required autocomplete="username" placeholder="Enter email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" required autocomplete="current-password" placeholder="Enter password"/>
+      </div>
+      <div id="login-error" class="text-muted mb-1" style="color:var(--danger);font-size:.85rem;display:none"></div>
+      <button type="submit" class="btn btn-primary w-full" id="login-btn">
+        <span id="login-btn-text">Sign In</span>
+        <span id="login-loader" class="loader hidden"></span>
+      </button>
+    </form>
+
+    <div class="text-center mt-2">
+      <small class="text-muted">
+        Advanced: 
+        <span style="color:var(--accent);cursor:pointer" onclick="toggleGasSetup()">Override Apps Script URL</span>
+      </small>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="api.js"></script>
+<script>
+  let currentRole = 'committee';
+
+  (async function init() {
+    // 1. Pathname safety check – exit immediately if cached index.html loaded on dashboard URL
+    const pathname = window.location.pathname;
+    if (!pathname.endsWith('index.html') && !pathname.endsWith('/') && pathname !== '') {
+      console.warn('[LoginInit] Bypassing login init because pathname is:', pathname);
+      return;
+    }
+
+    // 2. Save query-param URL if provided
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paramUrl = urlParams.get('gasUrl') || urlParams.get('url');
+      if (paramUrl && paramUrl.startsWith('https://')) {
+        localStorage.setItem('GAS_URL', paramUrl);
+      }
+    } catch(e) {}
+
+    // 3. Synchronous Redirect Loop Prevention
+    const u = Session.get();
+    let lastRedirect = 0;
+    try {
+      lastRedirect = Number(sessionStorage.getItem('lastRedirect') || localStorage.getItem('lastRedirect') || 0);
+    } catch(e) {}
+    
+    const isRedirected = window.location.search.includes('from=') || 
+                         document.referrer.includes('committee.html') || 
+                         document.referrer.includes('house.html') ||
+                         (Date.now() - lastRedirect < 3000);
+                         
+    console.log('[LoginInit] Session:', u, 'isRedirected:', isRedirected, 'lastRedirectDiff:', (lastRedirect ? Date.now() - lastRedirect : 'N/A'));
+    
+    if (u && u.loginRole && !isRedirected) {
+      try {
+        sessionStorage.setItem('lastRedirect', Date.now());
+        localStorage.setItem('lastRedirect', Date.now());
+      } catch(e) {}
+      redirect(u.loginRole, u);
+      return;
+    } else if (isRedirected) {
+      // Clear session to break loop
+      Session.clear();
+      try {
+        sessionStorage.removeItem('lastRedirect');
+        localStorage.removeItem('lastRedirect');
+        const cleanParams = new URLSearchParams(window.location.search);
+        cleanParams.delete('from');
+        const searchStr = cleanParams.toString();
+        history.replaceState(null, '', window.location.pathname + (searchStr ? '?' + searchStr : ''));
+      } catch(e) {}
+    } else if (u && !u.loginRole) {
+      Session.clear();
+    }
+
+    // 4. Load GAS Web App URL
+    let url = '';
+    try { url = localStorage.getItem('GAS_URL') || ''; } catch(e) {}
+    if (url) { document.getElementById('gas-url-input').value = url; }
+
+    // 4. Load Branding Settings
+    try {
+      const s = await getSettings();
+      if (s.CollegeName) document.getElementById('college-name').textContent = s.CollegeName;
+      if (s.EventTitle)  document.getElementById('event-title').textContent = s.EventTitle;
+      if (s.LogoUrl)     document.getElementById('school-logo').src = getGoogleDriveThumbUrl(s.LogoUrl);
+    } catch(e) {}
+  })();
+
+  function switchRole(r) {
+    currentRole = r;
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + r).classList.add('active');
+  }
+
+  function goScoreboard() { location.href = 'scoreboard.html'; }
+
+  function toggleGasSetup() {
+    const el = document.getElementById('gas-setup');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function saveGasUrl() {
+    const val = document.getElementById('gas-url-input').value.trim();
+    if (!val) return toast('Please enter the URL', 'error');
+    try {
+      localStorage.setItem('GAS_URL', val);
+    } catch(e) {
+      toast('Failed to save to local storage, using this session only.', 'warning');
+    }
+    toast('URL saved!', 'success');
+    document.getElementById('gas-setup').style.display = 'none';
+  }
+
+  async function doLogin(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('login-error');
+    const loader = document.getElementById('login-loader');
+    const btnTxt = document.getElementById('login-btn-text');
+
+    errEl.style.display = 'none';
+
+    try {
+      const email = document.getElementById('login-email').value.trim();
+      const pass  = document.getElementById('login-password').value.trim();
+
+      loader.classList.remove('hidden');
+      btnTxt.textContent = 'Signing in…';
+
+      const res = await apiPost('login', { role: currentRole, email, password: pass });
+      if (res.ok) {
+        const sessionData = { ...res, loginRole: currentRole, gasUrl: getGasUrl() };
+        Session.set(sessionData);
+        toast('Welcome, ' + (res.name || res.houseName) + '!', 'success');
+        setTimeout(() => redirect(currentRole, res), 600);
+      } else {
+        errEl.textContent = res.error || 'Login failed';
+        errEl.style.display = 'block';
+      }
+    } catch(err) {
+      errEl.textContent = err.message || 'Connection error. Check your Apps Script URL.';
+      errEl.style.display = 'block';
+    } finally {
+      loader.classList.add('hidden');
+      btnTxt.textContent = 'Sign In';
+    }
+  }
+
+  function redirect(role, data) {
+    data = data || {};
+    const gasUrl = getGasUrl();
+    const query = gasUrl ? `?gasUrl=${encodeURIComponent(gasUrl)}` : '';
+    if (role === 'committee') {
+      location.href = 'committee.html' + query;
+    } else if (role === 'house' || data.houseName) {
+      location.href = 'house.html' + query;
+    }
+  }
+</script>
+</body>
+</html>
