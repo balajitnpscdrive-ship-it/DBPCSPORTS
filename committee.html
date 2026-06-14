@@ -469,6 +469,46 @@ function renderRecentAwards() {
   </tbody></table>`;
 }
 
+function findPointsRule(category, position) {
+  const clean = str => String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+  const catClean = clean(category);
+  const posClean = clean(position);
+  
+  return pointsConfig.find(r => {
+    const rCat = clean(r.Category);
+    const rPos = clean(r.Position);
+    
+    let catMatch = (rCat === catClean);
+    if (!catMatch) {
+      if ((rCat.includes('indiv') && catClean.includes('indiv')) ||
+          (rCat.includes('team') && catClean.includes('team'))) {
+        catMatch = true;
+      }
+    }
+    if (!catMatch) return false;
+    
+    if (rPos === posClean) return true;
+    if (rPos.includes(posClean) || posClean.includes(rPos)) return true;
+    if (rPos.startsWith('particip') && posClean.startsWith('particip')) return true;
+    
+    // 1st / Winner
+    if ((rPos.includes('1st') || rPos.includes('winner') || rPos.includes('gold')) && 
+        (posClean.includes('1st') || posClean.includes('winner') || posClean.includes('gold'))) return true;
+        
+    // 2nd / Runner
+    if ((rPos.includes('2nd') || rPos.includes('runner') || rPos.includes('silver')) && 
+        (posClean.includes('2nd') || posClean.includes('runner') || posClean.includes('silver')) && 
+        !rPos.includes('secondrunner') && !posClean.includes('secondrunner') &&
+        !rPos.includes('3rd') && !posClean.includes('3rd')) return true;
+        
+    // 3rd / Second Runner
+    if ((rPos.includes('3rd') || rPos.includes('secondrunner') || rPos.includes('bronze')) && 
+        (posClean.includes('3rd') || posClean.includes('secondrunner') || posClean.includes('bronze'))) return true;
+        
+    return false;
+  });
+}
+
 // ── Award Points ───────────────────────────────────────────────────────────────
 document.getElementById('award-position').addEventListener('change', previewPoints);
 document.getElementById('award-event').addEventListener('change', previewPoints);
@@ -478,7 +518,7 @@ function previewPoints() {
   const opt = eventSel.options[eventSel.selectedIndex];
   const cat = opt ? opt.getAttribute('data-type') : '';
   const pos = document.getElementById('award-position').value;
-  const rule = pointsConfig.find(r => r.Category === cat && r.Position === pos);
+  const rule = findPointsRule(cat, pos);
   document.getElementById('award-pts-preview').textContent = rule ? `Points to be awarded: ${rule.Points}` : '';
 }
 
@@ -518,7 +558,7 @@ async function submitAward() {
     [studentName, dept, house] = sv.split('|');
   }
 
-  const rule = pointsConfig.find(r => r.Category === eventType && r.Position === position);
+  const rule = findPointsRule(eventType, position);
   const points = rule ? Number(rule.Points) : 0;
 
   let photoUrl = '';
@@ -544,7 +584,7 @@ async function submitNonGame() {
   const category = document.getElementById('ng-category').value;
   const position = document.getElementById('ng-position').value;
   const house = document.getElementById('ng-house').value;
-  const rule = pointsConfig.find(r => r.Category === category && r.Position === position);
+  const rule = findPointsRule(category, position);
   const points = rule ? Number(rule.Points) : 0;
   await apiPost('awardPoints', { eventId: category, eventName: category, position, studentName: house, dept: '', house, points, photoUrl: '', isTeam: true });
   toast(`✅ ${points} points awarded to ${house} for ${category}`, 'success');
