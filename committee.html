@@ -233,6 +233,7 @@
         <div class="topbar-title">All Results</div>
         <div class="flex gap-1">
           <select id="results-filter-event" onchange="filterResults()"><option value="">All Events</option></select>
+          <select id="results-filter-category" onchange="filterResults()"><option value="">All Categories</option></select>
           <select id="results-filter-house" onchange="filterResults()"><option value="">All Houses</option></select>
           <button class="btn btn-secondary btn-sm" onclick="printResults()">🖨️ Print</button>
         </div>
@@ -512,8 +513,16 @@ async function populateSelects() {
 
   // Results filters
   const rfe = document.getElementById('results-filter-event');
+  rfe.innerHTML = '<option value="">All Events</option>';
   eventsData.forEach(e => { rfe.innerHTML += `<option value="${e.EventID}">${e.EventName}</option>`; });
+  
+  const rfc = document.getElementById('results-filter-category');
+  rfc.innerHTML = '<option value="">All Categories</option>';
+  const resultsCats = [...new Set(eventsData.map(e => e.Category).filter(Boolean))];
+  resultsCats.forEach(c => { rfc.innerHTML += `<option value="${c}">${c}</option>`; });
+
   const rfh = document.getElementById('results-filter-house');
+  rfh.innerHTML = '<option value="">All Houses</option>';
   housesData.forEach(h => { rfh.innerHTML += `<option>${h.HouseName}</option>`; });
 
   // Certificates filters
@@ -945,9 +954,16 @@ async function renderResults(data) {
 
 async function filterResults() {
   const evt = document.getElementById('results-filter-event').value;
+  const cat = document.getElementById('results-filter-category').value;
   const hse = document.getElementById('results-filter-house').value;
   let filtered = resultsData;
   if (evt) filtered = filtered.filter(r => r.EventID === evt);
+  if (cat) {
+    filtered = filtered.filter(r => {
+      const ev = eventsData.find(e => e.EventID === r.EventID);
+      return ev && ev.Category === cat;
+    });
+  }
   if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
   await renderResults(filtered);
 }
@@ -957,12 +973,20 @@ function printResults() {
   const evtOpt = evtSel.options[evtSel.selectedIndex];
   const evtName = evtOpt && evtOpt.value ? evtOpt.textContent : 'All Events';
   
+  const catSel = document.getElementById('results-filter-category');
+  const catOpt = catSel.options[catSel.selectedIndex];
+  const catName = catOpt && catOpt.value ? catOpt.textContent : 'All Categories';
+
   const hseSel = document.getElementById('results-filter-house');
   const hseName = hseSel && hseSel.value ? hseSel.value + ' House' : 'All Houses';
   
   let title = 'Results Report';
-  if (evtName !== 'All Events' || hseName !== 'All Houses') {
-    title += ` (${evtName} - ${hseName})`;
+  let details = [];
+  if (evtName !== 'All Events') details.push(evtName);
+  if (catName !== 'All Categories') details.push(catName);
+  if (hseName !== 'All Houses') details.push(hseName);
+  if (details.length > 0) {
+    title += ` (${details.join(' - ')})`;
   }
   printWithHeader(title);
 }
