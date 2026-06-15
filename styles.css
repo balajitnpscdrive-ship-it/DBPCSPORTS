@@ -584,7 +584,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 }
 .achieve-details {
   flex: 1;
-  min-.cert-card {
+}
+.cert-card {
   width: 100%;
   max-width: 650px;
   aspect-ratio: 1 / 1.414; /* A4 Portrait Ratio */
