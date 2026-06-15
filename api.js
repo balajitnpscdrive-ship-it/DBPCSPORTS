@@ -45,7 +45,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycby8FwfW9fY-MTRRzWSBGulShWVdsK0FnyPKdJnYkaS1Nu_LbYdSJXFw-YgphDrum4fCdg/exec";
+const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxwb3VZ9ba5x6RmDQwfIXDoPxymVrse697nD5i9PgcEP7e-30oTES4AwH2idALAQL-yqw/exec";
 
 function getGasUrl() {
   let u = '';
@@ -178,7 +178,7 @@ const Session = {
       const urlParams = new URLSearchParams(window.location.search);
       const sessionParam = urlParams.get('session');
       if (sessionParam) {
-        data = decodeURIComponent(sessionParam);
+        data = sessionParam;
         console.log('[Session] Read from URL param:', data);
         // Cache it in storage if available
         try {
@@ -418,16 +418,16 @@ async function printWithHeader(title) {
   // Preload logo and founder images to ensure they show up in print
   await preloadImages([logoUrl, founderUrl]);
   
-  const header = document.getElementById('print-header');
+  const header = document.getElementById('print-header') || document.querySelector('.section-page:not(.hidden) .print-header');
   if (header) {
     header.innerHTML = `
-      ${logoUrl ? `<div class="print-hdr-thumb"><img src="${logoUrl}" alt="Logo"></div>` : ''}
+      ${logoUrl ? `<div class="print-hdr-thumb circular-logo"><img src="${logoUrl}" alt="Logo"></div>` : ''}
       <div style="flex:1;text-align:center">
         <div style="font-size:1.3rem;font-weight:800;color:#000;text-transform:uppercase;letter-spacing:1px;font-family:'Outfit',sans-serif">${s.CollegeName || ''}</div>
         <div style="font-size:0.95rem;font-weight:600;color:#333;margin-top:0.25rem">${s.EventTitle || ''}</div>
         <div style="font-size:1.05rem;font-weight:700;color:#000;margin-top:0.3rem;text-transform:uppercase">${title}</div>
       </div>
-      ${founderUrl ? `<div class="print-hdr-thumb circular"><img src="${founderUrl}" alt="Founder"><small style="display:block;font-size:8px;font-weight:bold;margin-top:2px;color:#333">FOUNDER</small></div>` : ''}
+      ${founderUrl ? `<div style="display:flex;flex-direction:column;align-items:center;"><div class="print-hdr-thumb circular"><img src="${founderUrl}" alt="Founder"></div><small style="font-size:8px;font-weight:bold;margin-top:2px;color:#333;text-transform:uppercase;">FOUNDER</small></div>` : ''}
     `;
   }
   
