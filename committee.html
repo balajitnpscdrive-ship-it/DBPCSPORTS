@@ -44,6 +44,7 @@
       <div class="nav-item" data-section="results">           <span class="icon">📋</span> All Results</div>
       <div class="nav-item" data-section="branding">          <span class="icon">🎨</span> Branding</div>
       <div class="nav-item" data-section="reports">           <span class="icon">🖨️</span> Reports</div>
+      <div class="nav-item" data-section="certificates">      <span class="icon">📜</span> Certificates</div>
     </nav>
     <div style="margin-top:auto;padding:1rem">
       <button class="btn btn-secondary btn-sm w-full" onclick="logout()">Logout</button>
@@ -274,6 +275,10 @@
             <label>Sports Committee In‑Charge Name</label>
             <input type="text" id="s-incharge"/>
           </div>
+          <div class="form-group">
+            <label>Sports Committee Secretary Name</label>
+            <input type="text" id="s-secretary"/>
+          </div>
           <button class="btn btn-primary w-full mt-1" onclick="saveSettings()">💾 Save Settings</button>
         </div>
         <div class="card">
@@ -359,6 +364,41 @@
           <div><div class="sig-line" id="rep-sig-principal">Principal</div></div>
         </div>
       </div>
+    </section>
+
+    <!-- Certificates Section -->
+    <section id="sec-certificates" class="section-page hidden">
+      <div class="topbar">
+        <div class="topbar-title">Certificates Generator</div>
+        <div class="flex gap-1 no-print">
+          <select id="cert-filter-event" onchange="filterCertificates()"><option value="">All Events</option></select>
+          <select id="cert-filter-house" onchange="filterCertificates()"><option value="">All Houses</option></select>
+          <button class="btn btn-primary btn-sm" onclick="printAllCertificates()">🖨️ Print All (Bulk)</button>
+        </div>
+      </div>
+      <div class="card no-print mb-3">
+        <h3 class="mb-2">Winner List</h3>
+        <div class="table-wrap" style="max-height:300px;overflow-y:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Position</th>
+                <th>Winner / House</th>
+                <th>House</th>
+                <th>Dept</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="cert-list-body">
+              <tr><td colspan="6" class="text-muted text-center">Loading winners...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Certificate Print Area -->
+      <div id="cert-print-area" class="cert-preview-container"></div>
     </section>
   </main>
 </div>
@@ -475,6 +515,19 @@ async function populateSelects() {
   eventsData.forEach(e => { rfe.innerHTML += `<option value="${e.EventID}">${e.EventName}</option>`; });
   const rfh = document.getElementById('results-filter-house');
   housesData.forEach(h => { rfh.innerHTML += `<option>${h.HouseName}</option>`; });
+
+  // Certificates filters
+  const cfe = document.getElementById('cert-filter-event');
+  if (cfe) {
+    cfe.innerHTML = '<option value="">All Events</option>';
+    eventsData.forEach(e => { cfe.innerHTML += `<option value="${e.EventID}">${e.EventName}</option>`; });
+  }
+  const cfh = document.getElementById('cert-filter-house');
+  if (cfh) {
+    cfh.innerHTML = '<option value="">All Houses</option>';
+    housesData.forEach(h => { cfh.innerHTML += `<option>${h.HouseName}</option>`; });
+  }
+  filterCertificates();
 
   renderEventsTable();
   renderHousesTable();
@@ -921,6 +974,7 @@ async function loadSettings() {
   document.getElementById('s-event-title').value   = s.EventTitle  || '';
   document.getElementById('s-principal').value     = s.PrincipalName || '';
   document.getElementById('s-incharge').value      = s.CommitteeInChargeName || '';
+  document.getElementById('s-secretary').value     = s.SecretaryName || '';
   if (s.LogoUrl)    { document.getElementById('preview-logo').src = getGoogleDriveThumbUrl(s.LogoUrl); document.getElementById('preview-logo').style.display='block'; }
   if (s.FounderUrl) { document.getElementById('preview-founder').src = getGoogleDriveThumbUrl(s.FounderUrl); document.getElementById('preview-founder').style.display='block'; }
   const sbLogo = document.getElementById('sb-logo');
@@ -930,7 +984,13 @@ async function loadSettings() {
 }
 
 async function saveSettings() {
-  const fields = { CollegeName: 's-college-name', EventTitle: 's-event-title', PrincipalName: 's-principal', CommitteeInChargeName: 's-incharge' };
+  const fields = { 
+    CollegeName: 's-college-name', 
+    EventTitle: 's-event-title', 
+    PrincipalName: 's-principal', 
+    CommitteeInChargeName: 's-incharge',
+    SecretaryName: 's-secretary'
+  };
   for (const [key, elId] of Object.entries(fields)) {
     await apiPost('saveSetting', { Key: key, Value: document.getElementById(elId).value });
   }
@@ -1141,6 +1201,181 @@ async function openReport(type) {
   content.innerHTML = html;
   output.classList.remove('hidden');
   output.scrollIntoView({ behavior:'smooth' });
+}
+
+// ── Certificates ──────────────────────────────────────────────────────────────
+function filterCertificates() {
+  const evt = document.getElementById('cert-filter-event').value;
+  const hse = document.getElementById('cert-filter-house').value;
+  let filtered = resultsData;
+  if (evt) filtered = filtered.filter(r => r.EventID === evt);
+  if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
+  renderCertificatesList(filtered);
+}
+
+function renderCertificatesList(list) {
+  const body = document.getElementById('cert-list-body');
+  if (!body) return;
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No winners found</td></tr>';
+    return;
+  }
+  const rows = list.map((r, i) => {
+    const winJson = JSON.stringify(r).replace(/"/g, '&quot;');
+    return `<tr>
+      <td>${r.EventName}</td>
+      <td><span class="badge badge-gold">${r.Position}</span></td>
+      <td><strong>${r.StudentName}</strong></td>
+      <td>${r.House}</td>
+      <td>${r.Department || '-'}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="printSingleCertificate(${winJson})">🖨️ Print</button>
+      </td>
+    </tr>`;
+  }).join('');
+  body.innerHTML = rows;
+}
+
+async function renderCertificateHTML(r, s) {
+  const [logoSrc, founderSrc, studentSrc] = await Promise.all([
+    imgToDataUrl(s.LogoUrl || ''),
+    imgToDataUrl(s.FounderUrl || ''),
+    r.PhotoUrl ? imgToDataUrl(r.PhotoUrl) : Promise.resolve('')
+  ]);
+
+  const finalLogo = logoSrc || getGoogleDriveThumbUrl(s.LogoUrl || '');
+  const finalFounder = founderSrc || getGoogleDriveThumbUrl(s.FounderUrl || '');
+  const finalStudent = studentSrc || (r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '');
+
+  const isTeamResult = r.IsTeam === true || r.IsTeam === 'true' || ['HouseDecoration','MarchPast','Discipline'].includes(r.EventName);
+  const roll = isTeamResult ? '' : getStudentRoll(r.StudentName);
+  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  let posText = r.Position;
+  if (r.Position === '1st') posText = 'First Place';
+  else if (r.Position === '2nd') posText = 'Second Place';
+  else if (r.Position === '3rd') posText = 'Third Place';
+  else if (r.Position === 'Winner') posText = 'Winner';
+  else if (r.Position === 'RunnerUp') posText = 'Runner Up';
+
+  const prestigiousWording = "In recognition of outstanding athletic performance, dedication, and exemplary sportsmanship displayed during the Annual Sports Meet.";
+
+  return `
+    <div class="cert-page-break">
+      <div class="cert-card">
+        <div class="cert-watermark" style="background-image: url('${finalLogo}')"></div>
+        
+        <!-- Header -->
+        <div class="cert-header">
+          ${finalLogo ? `<div class="print-hdr-thumb circular-logo" style="border: 2px solid #c9a054 !important;"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:70px"></div>'}
+          <div class="cert-header-title">
+            <h4>Certificate of Achievement</h4>
+            <h2>${s.CollegeName || 'COLLEGE NAME'}</h2>
+            <h5>${s.EventTitle || 'ANNUAL SPORTS DAY'}</h5>
+          </div>
+          ${finalFounder ? `<div style="display:flex;flex-direction:column;align-items:center;"><div class="print-hdr-thumb circular" style="border: 2px solid #c9a054 !important;"><img src="${finalFounder}" alt="Founder"></div><small style="font-size:7px;font-weight:bold;margin-top:2px;color:#333;text-transform:uppercase;">FOUNDER</small></div>` : '<div style="width:70px"></div>'}
+        </div>
+        
+        <!-- Body -->
+        <div class="cert-body">
+          <div class="cert-award-text">Certificate of Merit</div>
+          <div class="cert-certify">This is proudly presented to</div>
+          <div class="cert-recipient-name">${r.StudentName}</div>
+          
+          <div class="cert-recipient-meta">
+            ${isTeamResult 
+              ? `representing <strong>${r.House} House</strong> in recognition of securing`
+              : `of <strong>${r.Department} Department</strong> representing <strong>${r.House} House</strong>, in recognition of securing`
+            }
+          </div>
+          
+          <div class="cert-position-banner">${posText}</div>
+          
+          <div class="cert-recipient-meta">
+            in the event <strong>${r.EventName}</strong> with a score of <strong>${r.Points} Points</strong>.
+          </div>
+        </div>
+
+        <!-- Student Photo & Wording -->
+        <div class="cert-middle-section">
+          ${finalStudent ? `
+            <div class="cert-photo-frame">
+              <img src="${finalStudent}" alt="Winner Photo">
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="cert-prestigious-wording">
+          ${prestigiousWording}
+        </div>
+
+        <!-- Footer -->
+        <div class="cert-footer">
+          <div class="cert-sig-block">
+            <div class="cert-sig-name-cursive">${s.SecretaryName || ''}</div>
+            <div class="cert-sig-line">Secretary</div>
+          </div>
+          
+          <div class="cert-date-block">
+            <div class="cert-date-value">${dateStr}</div>
+            <div class="cert-date-label">Date</div>
+          </div>
+          
+          <div class="cert-sig-block">
+            <div class="cert-sig-name-cursive">${s.PrincipalName || ''}</div>
+            <div class="cert-sig-line">Principal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function printSingleCertificate(winner) {
+  const s = await getSettings();
+  toast('Preparing certificate...', 'info');
+  
+  document.body.classList.add('printing-certificates');
+  const printArea = document.getElementById('cert-print-area');
+  printArea.innerHTML = await renderCertificateHTML(winner, s);
+  
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove('printing-certificates');
+    printArea.innerHTML = '';
+  }, 500);
+}
+
+async function printAllCertificates() {
+  const evt = document.getElementById('cert-filter-event').value;
+  const hse = document.getElementById('cert-filter-house').value;
+  let filtered = resultsData;
+  if (evt) filtered = filtered.filter(r => r.EventID === evt);
+  if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
+  
+  if (!filtered.length) {
+    toast('No winners found to print certificates.', 'error');
+    return;
+  }
+  
+  const s = await getSettings();
+  toast(`Preparing ${filtered.length} certificates...`, 'info');
+  
+  document.body.classList.add('printing-certificates');
+  const printArea = document.getElementById('cert-print-area');
+  printArea.innerHTML = '';
+  
+  let html = '';
+  for (const winner of filtered) {
+    html += await renderCertificateHTML(winner, s);
+  }
+  printArea.innerHTML = html;
+  
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove('printing-certificates');
+    printArea.innerHTML = '';
+  }, 1000);
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
