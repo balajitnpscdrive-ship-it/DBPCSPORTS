@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Sports Committee Dashboard</title>
   <link rel="stylesheet" href="styles.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800;900&family=Cinzel:wght@600;700;800&family=Great+Vibes&family=Pinyon+Script&display=swap" rel="stylesheet"/>
   
   <!-- PWA Support -->
   <link rel="manifest" href="manifest.json"/>
@@ -1267,18 +1267,17 @@ async function renderCertificateHTML(r, s) {
         
         <!-- Header -->
         <div class="cert-header">
-          ${finalLogo ? `<div class="print-hdr-thumb circular-logo" style="border: 2px solid #c9a054 !important;"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:70px"></div>'}
+          ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:95px"></div>'}
           <div class="cert-header-title">
-            <h4>Certificate of Achievement</h4>
             <h2>${s.CollegeName || 'COLLEGE NAME'}</h2>
             <h5>${s.EventTitle || 'ANNUAL SPORTS DAY'}</h5>
+            <h4>Certificate of Achievement</h4>
           </div>
-          ${finalFounder ? `<div style="display:flex;flex-direction:column;align-items:center;"><div class="print-hdr-thumb circular" style="border: 2px solid #c9a054 !important;"><img src="${finalFounder}" alt="Founder"></div><small style="font-size:7px;font-weight:bold;margin-top:2px;color:#333;text-transform:uppercase;">FOUNDER</small></div>` : '<div style="width:70px"></div>'}
+          ${finalFounder ? `<div style="display:flex;flex-direction:column;align-items:center;"><div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div><small style="font-size:8px;font-weight:bold;margin-top:4px;color:#333;text-transform:uppercase;">FOUNDER</small></div>` : '<div style="width:95px"></div>'}
         </div>
         
         <!-- Body -->
         <div class="cert-body">
-          <div class="cert-award-text">Certificate of Merit</div>
           <div class="cert-certify">This is proudly presented to</div>
           <div class="cert-recipient-name">${r.StudentName}</div>
           
@@ -1312,7 +1311,7 @@ async function renderCertificateHTML(r, s) {
         <!-- Footer -->
         <div class="cert-footer">
           <div class="cert-sig-block">
-            <div class="cert-sig-name-cursive">${s.SecretaryName || ''}</div>
+            <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Secretary</div>
           </div>
           
@@ -1322,7 +1321,7 @@ async function renderCertificateHTML(r, s) {
           </div>
           
           <div class="cert-sig-block">
-            <div class="cert-sig-name-cursive">${s.PrincipalName || ''}</div>
+            <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Principal</div>
           </div>
         </div>
