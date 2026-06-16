@@ -1272,7 +1272,6 @@ async function renderCertificateHTML(r, s) {
   const finalStudent = studentSrc || (r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '');
 
   const isTeamResult = r.IsTeam === true || r.IsTeam === 'true' || ['HouseDecoration','MarchPast','Discipline'].includes(r.EventName);
-  const roll = isTeamResult ? '' : getStudentRoll(r.StudentName);
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   let posText = r.Position;
@@ -1283,6 +1282,10 @@ async function renderCertificateHTML(r, s) {
   else if (r.Position === 'RunnerUp') posText = 'Runner Up';
 
   const prestigiousWording = "In recognition of outstanding athletic performance, dedication, and exemplary sportsmanship displayed during the Annual Sports Meet.";
+
+  // Look up house color
+  const houseObj = housesData.find(h => isHouseMatch(h.HouseName, r.House));
+  const houseColor = houseObj && houseObj.Color ? houseObj.Color : '#c9a054';
 
   return `
     <div class="cert-page-break">
@@ -1300,34 +1303,87 @@ async function renderCertificateHTML(r, s) {
           ${finalFounder ? `<div style="display:flex;flex-direction:column;align-items:center;"><div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div><small style="font-size:8px;font-weight:bold;margin-top:4px;color:#333;text-transform:uppercase;">FOUNDER</small></div>` : '<div style="width:95px"></div>'}
         </div>
         
-        <!-- Body -->
-        <div class="cert-body">
-          <div class="cert-certify">This is proudly presented to</div>
-          <div class="cert-recipient-name">${r.StudentName}</div>
-          
-          <div class="cert-recipient-meta">
-            ${isTeamResult 
-              ? `representing <strong>${r.House} House</strong> in recognition of securing`
-              : `of <strong>${r.Department} Department</strong> representing <strong>${r.House} House</strong>, in recognition of securing`
-            }
+        <!-- Restructured content: House -> Photo -> Name -> Achievement -> Signatures -->
+        ${isTeamResult ? `
+          <!-- House Title (House Name First) -->
+          <div class="cert-house-title" style="color: ${houseColor} !important;">
+            ${r.House} House
           </div>
-          
-          <div class="cert-position-banner">${posText}</div>
-          
-          <div class="cert-recipient-meta">
-            in the event <strong>${r.EventName}</strong> with a score of <strong>${r.Points} Points</strong>.
-          </div>
-        </div>
 
-        <!-- Student Photo & Wording -->
-        <div class="cert-middle-section">
-          ${finalStudent ? `
-            <div class="cert-photo-frame">
-              <img src="${finalStudent}" alt="Winner Photo">
+          <!-- Student Photo (Main Attraction) -->
+          <div class="cert-middle-section">
+            ${finalStudent ? `
+              <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
+                <img src="${finalStudent}" alt="Team Photo">
+              </div>
+            ` : `
+              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center; height: 175px;">
+                <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase;">Team Event</span>
+              </div>
+            `}
+          </div>
+
+          <!-- Team Name/Title in House Color -->
+          <div class="cert-recipient-name" style="color: ${houseColor} !important;">
+            ${r.House} House Team
+          </div>
+
+          <!-- Achievement Details -->
+          <div class="cert-body">
+            <div class="cert-certify">This is to certify that the representative team of</div>
+            <div class="cert-recipient-meta">
+              <strong>${r.House} House</strong> has secured
             </div>
-          ` : ''}
-        </div>
+            
+            <div class="cert-position-banner" style="color: ${houseColor} !important;">${posText}</div>
+            
+            <div class="cert-recipient-meta">
+              in the event <strong>${r.EventName}</strong> with a score of <strong>${r.Points} Points</strong>.
+            </div>
+          </div>
+        ` : `
+          <!-- House Title (House Name First) -->
+          <div class="cert-house-title" style="color: ${houseColor} !important;">
+            ${r.House} House
+          </div>
 
+          <!-- Student Photo (Main Attraction) -->
+          <div class="cert-middle-section">
+            ${finalStudent ? `
+              <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
+                <img src="${finalStudent}" alt="Winner Photo">
+              </div>
+            ` : `
+              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center; height: 175px;">
+                <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase;">Photo</span>
+              </div>
+            `}
+          </div>
+
+          <!-- Student Name in House Color -->
+          <div class="cert-recipient-name" style="color: ${houseColor} !important;">
+            ${r.StudentName}
+          </div>
+
+          <!-- Achievement Details -->
+          <div class="cert-body">
+            <div class="cert-certify">This is to certify that the above-named student</div>
+            <div class="cert-recipient-meta">
+              of <strong>${r.Department} Department</strong> representing <strong>${r.House} House</strong>,
+            </div>
+            <div class="cert-recipient-meta" style="margin-top: 0.15rem;">
+              has secured
+            </div>
+            
+            <div class="cert-position-banner" style="color: ${houseColor} !important;">${posText}</div>
+            
+            <div class="cert-recipient-meta">
+              in the event <strong>${r.EventName}</strong> with a score of <strong>${r.Points} Points</strong>.
+            </div>
+          </div>
+        `}
+
+        <!-- Prestigious Wording -->
         <div class="cert-prestigious-wording">
           ${prestigiousWording}
         </div>
