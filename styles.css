@@ -589,10 +589,10 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   width: 100%;
   max-width: 650px;
   aspect-ratio: 1 / 1.414; /* A4 Portrait Ratio */
-  background: #fdfcf7; /* Premium parchment color */
-  border: 12px double #c9a054; /* Beautiful Gold double border */
+  background: radial-gradient(circle at center, #ffffff 0%, #fffdf4 75%, #fffbf0 100%); /* Premium warm radial parchment gradient */
+  border: 3.5px solid #c9a054; /* Minimal outer gold border */
   color: #1a1a1a;
-  padding: 2.2rem 1.5rem; /* Reduced margin/padding */
+  padding: 2.2rem 1.5rem; /* Optimized margin/padding */
   box-sizing: border-box;
   position: relative;
   box-shadow: var(--shadow);
@@ -602,6 +602,16 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+.cert-card::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1.5px solid rgba(201, 160, 84, 0.55); /* Inner thin gold border */
+  pointer-events: none;
+  z-index: 1;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 /* On-screen certificate preview layout wrapper */
@@ -682,28 +692,30 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 /* Header Title Hierarchy */
 .cert-header-title h2 {
   font-family: 'Cinzel', serif;
-  font-size: 1.65rem;
+  font-size: 1.3rem; /* Scaled down to prevent multi-line wrap */
   font-weight: 800;
-  color: #111;
+  color: #0f2042; /* Deep royal navy */
   text-transform: uppercase;
   margin-bottom: 0.2rem;
+  white-space: nowrap; /* Forces single line */
+  letter-spacing: 1px;
 }
 
 .cert-header-title h5 {
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #555;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 0.35rem;
+  letter-spacing: 1.5px;
+  margin-bottom: 0.3rem;
 }
 
 .cert-header-title h4 {
   font-family: 'Cinzel', serif;
-  font-size: 1.3rem; /* Emphasized size for Certificate of Achievement */
+  font-size: 1.25rem; /* Prominent Achievement text */
   font-weight: 700;
   letter-spacing: 2px;
-  color: #8b6508;
+  color: #c9a054; /* Gold */
   text-transform: uppercase;
   margin-bottom: 0;
 }
@@ -758,8 +770,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 }
 
 .cert-recipient-meta {
-  font-size: 1.1rem; /* Increased font size */
-  color: #333;
+  font-size: 1.05rem;
+  color: #2c3e50; /* Deep slate instead of black */
   line-height: 1.5;
   max-width: 95%;
   margin: 0 auto;
@@ -767,17 +779,25 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 
 .cert-recipient-meta strong {
   color: #000;
+  font-weight: 700;
 }
 
 .cert-position-banner {
+  display: inline-block;
+  padding: 0.45rem 2rem;
+  color: #fff !important; /* White text on colorful ribbon */
   font-family: 'Cinzel', serif;
-  font-size: 1.7rem; /* Increased font size */
+  font-size: 1.45rem;
   font-weight: 800;
-  color: #b8860b;
-  margin: 0.3rem 0;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  text-shadow: 0px 2px 4px rgba(0,0,0,0.05);
+  letter-spacing: 1.5px;
+  border-radius: 30px; /* Pill shape ribbon */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin: 0.55rem 0;
+  text-align: center;
+  z-index: 2;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .cert-middle-section {
@@ -785,15 +805,15 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  margin: 0.5rem 0;
+  margin: 0.6rem 0;
   width: 100%;
 }
 
 .cert-photo-frame {
-  width: 135px; /* Sized to be the main attraction */
-  height: 175px;
+  width: 140px; /* Sized to be the main attraction */
+  height: 140px; /* Perfect circle cutout */
   border: 2.5px solid #c9a054; /* Clean solid border instead of double */
-  border-radius: 4px;
+  border-radius: 50%;
   overflow: hidden;
   background: #fdfdfd;
   box-shadow: 0 4px 10px rgba(0,0,0,0.06);
@@ -807,6 +827,18 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   height: 100%;
   object-fit: cover;
 }
+
+.cert-corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  z-index: 3;
+  pointer-events: none;
+}
+.cert-corner.top-left { top: 12px; left: 12px; }
+.cert-corner.top-right { top: 12px; right: 12px; }
+.cert-corner.bottom-left { bottom: 12px; left: 12px; }
+.cert-corner.bottom-right { bottom: 12px; right: 12px; }
 
 .cert-prestigious-wording {
   font-size: 0.88rem; /* Increased font size */
@@ -948,9 +980,9 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     width: 100% !important;
     height: 100% !important;
     max-width: none !important;
-    border: 15px double #c9a054 !important;
+    border: 3.5px solid #c9a054 !important; /* Minimal outer gold border */
     box-shadow: none !important;
-    background: #fffdf6 !important;
+    background: radial-gradient(circle at center, #ffffff 0%, #fffdf4 75%, #fffbf0 100%) !important;
     padding: 30mm 15mm 20mm 15mm !important;
     box-sizing: border-box !important;
     -webkit-print-color-adjust: exact !important;
