@@ -710,6 +710,17 @@ async function submitAward() {
     }
   }
 
+  // ── Duplicate Guard (Frontend) ────────────────────────────────
+  // Prevent awarding points more than once to the same student/house for the same event.
+  const alreadyAwarded = resultsData.some(r =>
+    String(r.EventID).trim().toLowerCase() === String(eventId).trim().toLowerCase() &&
+    String(r.StudentName || r.House || '').trim().toLowerCase() === String(studentName).trim().toLowerCase()
+  );
+  if (alreadyAwarded) {
+    toast(`⚠️ Points already awarded to "${studentName}" for "${eventName}". Duplicate blocked.`, 'error');
+    return;
+  }
+
   const rule = findPointsRule(eventType, position);
   const points = rule ? Number(rule.Points) : 0;
 
@@ -722,7 +733,11 @@ async function submitAward() {
     photoUrl = uploaded.url || '';
   }
 
-  await apiPost('awardPoints', { eventId, eventName, position, studentName, dept, house, points, photoUrl, isTeam: eventType === 'Team' });
+  const res = await apiPost('awardPoints', { eventId, eventName, position, studentName, dept, house, points, photoUrl, isTeam: eventType === 'Team' });
+  if (res && res.duplicate) {
+    toast(`⚠️ Server: Points already recorded for "${studentName}" in "${eventName}". Duplicate blocked.`, 'error');
+    return;
+  }
   toast(`✅ ${points} points awarded to ${studentName} (${house})`, 'success');
   fireConfetti();
   awardScanned = null;
@@ -736,9 +751,24 @@ async function submitNonGame() {
   const category = document.getElementById('ng-category').value;
   const position = document.getElementById('ng-position').value;
   const house = document.getElementById('ng-house').value;
+
+  // ── Duplicate Guard for non-game awards ──────────────────────
+  const alreadyAwarded = resultsData.some(r =>
+    String(r.EventID).trim().toLowerCase() === String(category).trim().toLowerCase() &&
+    String(r.House || '').trim().toLowerCase() === String(house).trim().toLowerCase()
+  );
+  if (alreadyAwarded) {
+    toast(`⚠️ "${house}" already has points for "${category}". Duplicate blocked.`, 'error');
+    return;
+  }
+
   const rule = findPointsRule(category, position);
   const points = rule ? Number(rule.Points) : 0;
-  await apiPost('awardPoints', { eventId: category, eventName: category, position, studentName: house, dept: '', house, points, photoUrl: '', isTeam: true });
+  const res = await apiPost('awardPoints', { eventId: category, eventName: category, position, studentName: house, dept: '', house, points, photoUrl: '', isTeam: true });
+  if (res && res.duplicate) {
+    toast(`⚠️ Server: Points already recorded for "${house}" in "${category}". Duplicate blocked.`, 'error');
+    return;
+  }
   toast(`✅ ${points} points awarded to ${house} for ${category}`, 'success');
   fireConfetti();
   await loadAll();
