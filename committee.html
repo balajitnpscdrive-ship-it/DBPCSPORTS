@@ -1292,6 +1292,12 @@ async function renderCertificateHTML(r, s) {
       <div class="cert-card">
         <div class="cert-watermark" style="background-image: url('${finalLogo}')"></div>
         
+        <!-- Vector Ornamental Corners -->
+        <svg class="cert-corner top-left" viewBox="0 0 100 100" width="32" height="32"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+        <svg class="cert-corner top-right" viewBox="0 0 100 100" width="32" height="32" style="transform: scaleX(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+        <svg class="cert-corner bottom-left" viewBox="0 0 100 100" width="32" height="32" style="transform: scaleY(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+        <svg class="cert-corner bottom-right" viewBox="0 0 100 100" width="32" height="32" style="transform: scale(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+
         <!-- Header -->
         <div class="cert-header">
           ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:95px"></div>'}
@@ -1303,22 +1309,17 @@ async function renderCertificateHTML(r, s) {
           ${finalFounder ? `<div style="display:flex;flex-direction:column;align-items:center;"><div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div><small style="font-size:8px;font-weight:bold;margin-top:4px;color:#333;text-transform:uppercase;">FOUNDER</small></div>` : '<div style="width:95px"></div>'}
         </div>
         
-        <!-- Restructured content: House -> Photo -> Name -> Achievement -> Signatures -->
+        <!-- Body: Photo -> Name -> Details -->
         ${isTeamResult ? `
-          <!-- House Title (House Name First) -->
-          <div class="cert-house-title" style="color: ${houseColor} !important;">
-            ${r.House} House
-          </div>
-
-          <!-- Student Photo (Main Attraction) -->
+          <!-- Team Photo Cutout (Circle placeholder or uploaded image) -->
           <div class="cert-middle-section">
             ${finalStudent ? `
               <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
                 <img src="${finalStudent}" alt="Team Photo">
               </div>
             ` : `
-              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center; height: 175px;">
-                <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase;">Team Event</span>
+              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase;">Team</span>
               </div>
             `}
           </div>
@@ -1335,26 +1336,21 @@ async function renderCertificateHTML(r, s) {
               <strong>${r.House} House</strong> has secured
             </div>
             
-            <div class="cert-position-banner" style="color: ${houseColor} !important;">${posText}</div>
+            <div class="cert-position-banner" style="background: linear-gradient(135deg, ${houseColor} 0%, ${houseColor}dd 100%) !important;">${posText}</div>
             
             <div class="cert-recipient-meta">
               in the event <strong>${r.EventName}</strong> with a score of <strong>${r.Points} Points</strong>.
             </div>
           </div>
         ` : `
-          <!-- House Title (House Name First) -->
-          <div class="cert-house-title" style="color: ${houseColor} !important;">
-            ${r.House} House
-          </div>
-
-          <!-- Student Photo (Main Attraction) -->
+          <!-- Student Photo Cutout (Circle placeholder or uploaded image) -->
           <div class="cert-middle-section">
             ${finalStudent ? `
               <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
                 <img src="${finalStudent}" alt="Winner Photo">
               </div>
             ` : `
-              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center; height: 175px;">
+              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center;">
                 <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase;">Photo</span>
               </div>
             `}
@@ -1375,7 +1371,7 @@ async function renderCertificateHTML(r, s) {
               has secured
             </div>
             
-            <div class="cert-position-banner" style="color: ${houseColor} !important;">${posText}</div>
+            <div class="cert-position-banner" style="background: linear-gradient(135deg, ${houseColor} 0%, ${houseColor}dd 100%) !important;">${posText}</div>
             
             <div class="cert-recipient-meta">
               in the event <strong>${r.EventName}</strong> with a score of <strong>${r.Points} Points</strong>.
