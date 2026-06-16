@@ -1298,111 +1298,70 @@ async function renderCertificateHTML(r, s) {
         <svg class="cert-corner bottom-left" viewBox="0 0 100 100" width="32" height="32" style="transform: scaleY(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
         <svg class="cert-corner bottom-right" viewBox="0 0 100 100" width="32" height="32" style="transform: scale(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
 
-        <!-- Header -->
+        <!-- Header: Logo | College Name (2 lines bold) | Founder -->
         <div class="cert-header">
           <div class="cert-header-side">
             ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
           </div>
           <div class="cert-header-title">
             <h2>${s.CollegeName || 'COLLEGE NAME'}</h2>
-            <h5>${s.EventTitle || 'ANNUAL SPORTS DAY'}</h5>
-            <h4>Certificate of Achievement</h4>
           </div>
           <div class="cert-header-side">
             ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div><small style="font-size:8px;font-weight:bold;margin-top:4px;color:#333;text-transform:uppercase;">FOUNDER</small>` : '<div style="width:88px"></div>'}
           </div>
         </div>
+
+        <!-- Event Title Block -->
+        <div class="cert-event-block">
+          <div class="cert-event-title">${s.EventTitle || 'SPORTS DAY 2026'}</div>
+          <div class="cert-award-text">Certificate of Achievement</div>
+        </div>
         
-        <!-- Body: Photo -> Name -> Details -->
-        ${isTeamResult ? `
-          <!-- Team Photo Cutout (Circle placeholder or uploaded image) -->
-          <div class="cert-middle-section">
-            ${finalStudent ? `
-              <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
-                <img src="${finalStudent}" alt="Team Photo">
-              </div>
-            ` : `
-              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center;">
-                <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase;">Team</span>
-              </div>
-            `}
-          </div>
+        <!-- Photo -->
+        <div class="cert-middle-section">
+          ${finalStudent ? `
+            <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
+              <img src="${finalStudent}" alt="${isTeamResult ? 'Team Photo' : 'Winner Photo'}">
+            </div>
+          ` : `
+            <div class="cert-photo-frame" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 13px; color: #aaa; font-weight: 600; text-transform: uppercase;">${isTeamResult ? 'Team' : 'Photo'}</span>
+            </div>
+          `}
+        </div>
 
-          <!-- Team Name/Title in House Color -->
-          <div class="cert-recipient-name" style="color: ${houseColor} !important;">
-            ${r.House} House Team
-          </div>
+        <!-- Gold Hexagon Name Banner -->
+        <div class="cert-name-banner">${isTeamResult ? r.House + ' House Team' : r.StudentName}</div>
 
-          <!-- Achievement Details -->
-          <div class="cert-body">
-            <div class="cert-certify">This is to certify that the representative team of</div>
-            <div class="cert-recipient-meta">
-              <span class="cert-house-highlight" style="color: ${houseColor} !important;">${r.House} House</span> has secured
-            </div>
-            
-            <div class="cert-position-banner" style="background: linear-gradient(135deg, ${houseColor} 0%, ${houseColor}dd 100%) !important;">${posText}</div>
-            
-            <div class="cert-recipient-meta">
-              in the event <strong>${r.EventName}</strong>.
-            </div>
-          </div>
-        ` : `
-          <!-- Student Photo Cutout (Circle placeholder or uploaded image) -->
-          <div class="cert-middle-section">
-            ${finalStudent ? `
-              <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
-                <img src="${finalStudent}" alt="Winner Photo">
-              </div>
-            ` : `
-              <div class="cert-photo-frame cert-photo-placeholder" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center;">
-                <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase;">Photo</span>
-              </div>
-            `}
-          </div>
-
-          <!-- Student Name in House Color -->
-          <div class="cert-recipient-name" style="color: ${houseColor} !important;">
-            ${r.StudentName}
-          </div>
-
-          <!-- Achievement Details -->
-          <div class="cert-body">
-            <div class="cert-certify">This is to certify that the above-named student</div>
-            <div class="cert-recipient-meta">
-              of <span class="cert-dept-highlight">${r.Department} Department</span> representing <span class="cert-house-highlight" style="color: ${houseColor} !important;">${r.House} House</span>,
-            </div>
-            <div class="cert-recipient-meta" style="margin-top: 0.15rem;">
-              has secured
-            </div>
-            
-            <div class="cert-position-banner" style="background: linear-gradient(135deg, ${houseColor} 0%, ${houseColor}dd 100%) !important;">${posText}</div>
-            
-            <div class="cert-recipient-meta">
-              in the event <strong>${r.EventName}</strong>.
-            </div>
-          </div>
-        `}
+        <!-- Certificate Body -->
+        <div class="cert-body">
+          <div class="cert-certify">This is to certify that the above mentioned student of</div>
+          ${isTeamResult ? `
+            <div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>
+            <div class="cert-achievement-line">has secured <strong>${posText}</strong> in the event <strong>"${r.EventName}"</strong></div>
+          ` : `
+            <div class="cert-dept-line">${r.Department} Department</div>
+            <div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>
+            <div class="cert-achievement-line">has secured <strong>${posText}</strong> in the event <strong>"${r.EventName}"</strong></div>
+          `}
+        </div>
 
         <!-- Prestigious Wording -->
         <div class="cert-prestigious-wording">
-          ${prestigiousWording}
+          Demonstrating exceptional athleticism and sportsmanship, your outstanding performance in this sporting arena has contributed immensely to the legacy of our institution.
         </div>
 
-        <!-- Footer -->
+        <!-- Footer: Secretary | Principal (no date in center) -->
         <div class="cert-footer">
           <div class="cert-sig-block">
             <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Secretary</div>
+            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
           </div>
-          
-          <div class="cert-date-block">
-            <div class="cert-date-value">${dateStr}</div>
-            <div class="cert-date-label">Date</div>
-          </div>
-          
           <div class="cert-sig-block">
             <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Principal</div>
+            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
           </div>
         </div>
       </div>
