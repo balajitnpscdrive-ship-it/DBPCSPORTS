@@ -701,33 +701,21 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 
 /* Header Title Hierarchy */
 .cert-header-title h2 {
-  font-family: 'Cinzel', serif;
-  font-size: 1.3rem; /* Bigger college name - prominent branding */
-  font-weight: 800;
-  color: #0f2042; /* Deep royal navy */
-  text-transform: uppercase;
-  margin-bottom: 0.2rem;
-  white-space: nowrap; /* Forces single line */
-  letter-spacing: 0.5px;
-}
-
-.cert-header-title h5 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 0.3rem;
-}
-
-.cert-header-title h4 {
-  font-family: 'Cinzel', serif;
-  font-size: 1.25rem; /* Prominent Achievement text */
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #c9a054; /* Gold */
+  font-family: 'Inter', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #1a1a1a; /* Bold black like reference */
   text-transform: uppercase;
   margin-bottom: 0;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  white-space: normal; /* Allow 2 lines */
+}
+
+/* h5/h4 in header no longer used - moved to cert-event-block */
+.cert-header-title h5,
+.cert-header-title h4 {
+  display: none;
 }
 
 .cert-house-title {
@@ -742,80 +730,122 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 }
 
 .cert-body {
-  margin: 0.6rem 0; /* Reduced vertical margins */
+  margin: 0.3rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   z-index: 2;
+}
+
+/* Event block: Sports Day 2026 + Certificate of Achievement */
+.cert-event-block {
+  text-align: center;
+  z-index: 2;
+  margin: 0.25rem 0;
+}
+
+.cert-event-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #d4a017; /* Bright gold */
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .cert-award-text {
   font-family: 'Cinzel', serif;
-  font-size: 1.25rem; /* Increased font size */
-  font-weight: 700;
-  color: #8b6508;
-  letter-spacing: 3px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8b6914;
+  letter-spacing: 3.5px;
   text-transform: uppercase;
-  margin-bottom: 0.2rem;
+  margin-top: 0.2rem;
 }
 
 .cert-certify {
-  font-size: 1rem; /* Increased font size */
+  font-size: 0.9rem;
   font-style: italic;
   color: #555;
+  letter-spacing: 0.3px;
+}
+
+/* Gold hexagon name banner (replaces recipient-name) */
+.cert-name-banner {
+  display: block;
+  width: 78%;
+  margin: 0.4rem auto;
+  padding: 0.55rem 2.5rem;
+  background: linear-gradient(135deg, #c9a02a 0%, #f0cc50 50%, #c9a02a 100%);
+  clip-path: polygon(4% 0%, 96% 0%, 100% 50%, 96% 100%, 4% 100%, 0% 50%);
+  font-family: 'Inter', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #1a1205;
   text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.cert-recipient-name {
-  font-family: 'Times New Roman', Times, serif !important;
-  font-size: 2.6rem !important; /* Increased font size and font face to Times New Roman */
-  font-weight: 900 !important;
-  color: #111 !important;
-  margin: 0.4rem 0 !important;
-  line-height: 1.1;
-  text-transform: uppercase !important; /* Forces uppercase */
-  letter-spacing: 1.5px;
-}
-
-.cert-recipient-meta {
-  font-size: 1.05rem;
-  color: #2c3e50; /* Deep slate instead of black */
-  line-height: 1.5;
-  max-width: 95%;
-  margin: 0 auto;
-}
-
-.cert-recipient-meta strong {
-  color: #000;
-  font-weight: 700;
-}
-
-.cert-position-banner {
-  display: inline-block;
-  padding: 0.45rem 2rem;
-  color: #fff !important; /* White text on colorful ribbon */
-  font-family: 'Cinzel', serif;
-  font-size: 1.45rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  border-radius: 30px; /* Pill shape ribbon */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin: 0.55rem 0;
+  letter-spacing: 2px;
   text-align: center;
   z-index: 2;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
+/* Department line - bold black uppercase */
+.cert-dept-line {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1.3;
+}
+
+/* House line - receives house color via inline style */
+.cert-house-line {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  line-height: 1.3;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* Achievement sentence: 'has secured FIRST PLACE in the event "100 METER"' */
+.cert-achievement-line {
+  font-size: 1.05rem;
+  color: #111;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 92%;
+}
+
+.cert-achievement-line strong {
+  font-weight: 900;
+  color: #111;
+}
+
+/* Kept for backward compat; now replaced by cert-name-banner */
+.cert-recipient-name {
+  display: none;
+}
+
+/* cert-position-banner kept for any legacy use but hidden in new design */
+.cert-position-banner {
+  display: none;
+}
+
 .cert-middle-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  margin: 0.6rem 0;
+  margin: 0.3rem 0;
   width: 100%;
 }
 
@@ -903,14 +933,24 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 
 .cert-sig-line {
   width: 100%;
-  border-top: 1.5px solid #000; /* Darker signature line */
+  border-top: 1.5px solid #000;
   margin-top: 0.3rem;
   padding-top: 0.3rem;
-  font-size: 0.78rem; /* Increased font size */
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   color: #111;
   letter-spacing: 1.2px;
+}
+
+/* College name sub-label below signature role */
+.cert-sig-sub {
+  font-size: 0.68rem;
+  color: #555;
+  font-style: italic;
+  margin-top: 0.2rem;
+  text-align: center;
+  max-width: 180px;
 }
 
 .cert-date-block {
