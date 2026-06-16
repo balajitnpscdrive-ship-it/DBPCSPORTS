@@ -647,8 +647,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 }
 
 .cert-logo {
-  width: 95px; /* Increased logo size */
-  height: 95px;
+  width: 80px; /* Scaled down slightly to prevent title overflow */
+  height: 80px;
   border-radius: 50%;
   border: 3px solid #c9a054;
   overflow: hidden;
@@ -668,8 +668,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 }
 
 .cert-founder-wrap {
-  width: 95px; /* Increased founder photo size */
-  height: 95px;
+  width: 80px; /* Scaled down slightly to prevent title overflow */
+  height: 80px;
   border-radius: 50%;
   border: 3px solid #c9a054;
   overflow: hidden;
@@ -692,7 +692,7 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 /* Header Title Hierarchy */
 .cert-header-title h2 {
   font-family: 'Cinzel', serif;
-  font-size: 1.3rem; /* Scaled down to prevent multi-line wrap */
+  font-size: 1.15rem; /* Scaled down to prevent multi-line wrap and founder cutoff */
   font-weight: 800;
   color: #0f2042; /* Deep royal navy */
   text-transform: uppercase;
@@ -810,8 +810,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 }
 
 .cert-photo-frame {
-  width: 140px; /* Sized to be the main attraction */
-  height: 140px; /* Perfect circle cutout */
+  width: 180px; /* Sized to be the main attraction, increased area */
+  height: 180px; /* Perfect circle cutout */
   border: 2.5px solid #c9a054; /* Clean solid border instead of double */
   border-radius: 50%;
   overflow: hidden;
@@ -983,7 +983,7 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     border: 3.5px solid #c9a054 !important; /* Minimal outer gold border */
     box-shadow: none !important;
     background: radial-gradient(circle at center, #ffffff 0%, #fffdf4 75%, #fffbf0 100%) !important;
-    padding: 30mm 15mm 20mm 15mm !important;
+    padding: 20mm 15mm 15mm 15mm !important; /* Reduced top/bottom margin areas */
     box-sizing: border-box !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
