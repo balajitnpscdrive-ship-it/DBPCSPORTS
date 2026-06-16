@@ -2,7 +2,7 @@
 // sw.js – PWA Service Worker | Sports Day Management (MPA)
 // ============================================================
 
-const CACHE_NAME = 'sports-day-v3';
+const CACHE_NAME = 'sports-day-v4';
 const ASSETS = [
   './',
   './index.html',
