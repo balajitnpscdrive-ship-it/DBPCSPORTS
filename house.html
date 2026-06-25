@@ -369,7 +369,7 @@ async function submitBulk() {
 function renderShortList() {
   const filter = document.getElementById('sl-filter-event').value;
   let data = shortListData.filter(e => isHouseMatch(e.House, myHouse) && e.ListType === 'shortlist');
-  if (filter) data = data.filter(e => e.EventID === filter);
+  if (filter) data = data.filter(e => String(e.EventID) === String(filter));
   if (!data.length) {
     document.getElementById('shortlist-body').innerHTML = '<tr><td colspan="6" class="text-muted text-center">No entries yet</td></tr>';
     return;
@@ -395,7 +395,8 @@ let finalSelected = [];
 function loadShortForFinal() {
   const evId = document.getElementById('fl-event-sel').value;
   if (!evId) { document.getElementById('fl-short-pick').innerHTML = '<p class="text-muted">Select an event</p>'; return; }
-  const data = shortListData.filter(e => isHouseMatch(e.House, myHouse) && e.EventID === evId);
+  const alreadyFinal = new Set(finalListData.filter(f => isHouseMatch(f.House, myHouse) && String(f.EventID) === String(evId)).map(f => f.StudentName.trim().toLowerCase()));
+  const data = shortListData.filter(e => isHouseMatch(e.House, myHouse) && String(e.EventID) === String(evId) && !alreadyFinal.has(e.StudentName.trim().toLowerCase()));
   finalSelected = [];
   document.getElementById('fl-short-pick').innerHTML = data.length
     ? `<table><thead><tr><th><input type="checkbox" onchange="toggleAllFinal(this)"></th><th>Student</th><th>Dept</th></tr></thead><tbody>
@@ -423,7 +424,7 @@ async function submitFinal() {
 function renderFinalList() {
   const filter = document.getElementById('fl-filter-event').value;
   let data = finalListData.filter(f => isHouseMatch(f.House, myHouse));
-  if (filter) data = data.filter(f => f.EventID === filter);
+  if (filter) data = data.filter(f => String(f.EventID) === String(filter));
   if (!data.length) {
     document.getElementById('finallist-body').innerHTML = '<tr><td colspan="6" class="text-muted text-center">No final list yet</td></tr>';
     return;
