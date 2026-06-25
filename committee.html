@@ -42,6 +42,7 @@
       <div class="nav-item" data-section="committee-users">   <span class="icon">👥</span> Users</div>
       <div class="nav-item" data-section="students">          <span class="icon">🎓</span> Students</div>
       <div class="nav-item" data-section="results">           <span class="icon">📋</span> All Results</div>
+      <div class="nav-item" data-section="photos">            <span class="icon">📸</span> Winner Photos</div>
       <div class="nav-item" data-section="branding">          <span class="icon">🎨</span> Branding</div>
       <div class="nav-item" data-section="reports">           <span class="icon">🖨️</span> Reports</div>
       <div class="nav-item" data-section="certificates">      <span class="icon">📜</span> Certificates</div>
@@ -104,10 +105,6 @@
           <div id="award-scanned" class="card mt-1 hidden" style="padding:.75rem">
             <strong id="award-scanned-name"></strong>
             <span class="text-muted" id="award-scanned-meta"></span>
-          </div>
-          <div class="form-group mt-2">
-            <label>Upload Student Photo (optional)</label>
-            <input type="file" id="award-photo" accept="image/*"/>
           </div>
           <div id="award-pts-preview" class="mt-1 text-muted" style="font-size:.9rem"></div>
           <button class="btn btn-primary w-full mt-2" onclick="submitAward()">🥇 Award Points</button>
@@ -254,7 +251,19 @@
       </div>
     </section>
 
-    <!-- Branding -->
+    <!-- Winner Photos Upload -->
+    <section id="sec-photos" class="section-page hidden">
+      <div class="topbar">
+        <div class="topbar-title">Winner Photos</div>
+        <div class="flex gap-1">
+          <input id="photo-search" placeholder="Search name or event…" style="padding:0.4rem 0.8rem;border-radius:8px;border:1px solid var(--glass-border);background:var(--glass);color:var(--text);font-size:0.88rem;" oninput="renderPhotoGrid()">
+          <select id="photo-filter-event" onchange="renderPhotoGrid()" style="padding:0.4rem 0.8rem;border-radius:8px;border:1px solid var(--glass-border);background:var(--glass);color:var(--text);font-size:0.88rem;">
+            <option value="">All Events</option>
+          </select>
+        </div>
+      </div>
+      <div id="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.2rem;padding:0.5rem 0;"></div>
+    </section>
     <section id="sec-branding" class="section-page hidden">
       <div class="topbar"><div class="topbar-title">Branding &amp; Settings</div></div>
       <div class="grid-2">
@@ -446,6 +455,13 @@ let chartInstance = null;
   if (!user) return;
   document.getElementById('sb-user').textContent = user.name || 'Admin';
   initNav();
+
+  // When Winner Photos nav is clicked, refresh the photo grid
+  const photosNavItem = document.querySelector('.nav-item[data-section="photos"]');
+  if (photosNavItem) {
+    photosNavItem.addEventListener('click', () => renderPhotoGrid());
+  }
+
   await loadAll();
   buildDashboard();
 })();
@@ -724,16 +740,7 @@ async function submitAward() {
   const rule = findPointsRule(eventType, position);
   const points = rule ? Number(rule.Points) : 0;
 
-  let photoUrl = '';
-  const photoFile = document.getElementById('award-photo').files[0];
-  if (photoFile) {
-    toast('Uploading photo…', 'info');
-    const b64data = await fileToBase64(photoFile);
-    const uploaded = await apiPost('uploadPhoto', { ...b64data, studentName, house, dept });
-    photoUrl = uploaded.url || '';
-  }
-
-  const res = await apiPost('awardPoints', { eventId, eventName, position, studentName, dept, house, points, photoUrl, isTeam: eventType === 'Team' });
+  const res = await apiPost('awardPoints', { eventId, eventName, position, studentName, dept, house, points, photoUrl: '', isTeam: eventType === 'Team' });
   if (res && res.duplicate) {
     toast(`⚠️ Server: Points already recorded for "${studentName}" in "${eventName}". Duplicate blocked.`, 'error');
     return;
@@ -742,7 +749,6 @@ async function submitAward() {
   fireConfetti();
   awardScanned = null;
   document.getElementById('award-scanned').classList.add('hidden');
-  document.getElementById('award-photo').value = '';
   await loadAll();
   buildDashboard();
 }
@@ -787,7 +793,7 @@ function renderEventsTable() {
 }
 
 function openEventModal(id) {
-  const ev = id ? eventsData.find(e => e.EventID === id) : {};
+  const ev = id ? eventsData.find(e => String(e.EventID) === String(id)) : {};
   document.getElementById('modal-content').innerHTML = `
     <h3 class="mb-2">${id ? 'Edit' : 'Add'} Event</h3>
     <div class="form-group"><label>Event ID</label><input id="ev-id" value="${ev.EventID||''}" ${id?'readonly':''}></div>
@@ -987,15 +993,101 @@ async function filterResults() {
   const cat = document.getElementById('results-filter-category').value;
   const hse = document.getElementById('results-filter-house').value;
   let filtered = resultsData;
-  if (evt) filtered = filtered.filter(r => r.EventID === evt);
+  if (evt) filtered = filtered.filter(r => String(r.EventID) === String(evt));
   if (cat) {
     filtered = filtered.filter(r => {
-      const ev = eventsData.find(e => e.EventID === r.EventID);
+      const ev = eventsData.find(e => String(e.EventID) === String(r.EventID));
       return ev && ev.Category === cat;
     });
   }
   if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
   await renderResults(filtered);
+}
+
+// ── Winner Photos ─────────────────────────────────────────────────────────────
+function renderPhotoGrid() {
+  const search = (document.getElementById('photo-search')?.value || '').toLowerCase();
+  const filterEvent = document.getElementById('photo-filter-event')?.value || '';
+
+  // Populate event filter dropdown (once)
+  const pfeSel = document.getElementById('photo-filter-event');
+  const existingOpts = pfeSel.querySelectorAll('option[value]:not([value=""])').length;
+  if (existingOpts === 0) {
+    const uniqueEvents = [...new Map(resultsData.map(r => [r.EventID, r.EventName])).entries()];
+    uniqueEvents.forEach(([id, name]) => {
+      const o = document.createElement('option'); o.value = id; o.textContent = name;
+      pfeSel.appendChild(o);
+    });
+  }
+
+  let data = resultsData;
+  if (filterEvent) data = data.filter(r => String(r.EventID) === String(filterEvent));
+  if (search) data = data.filter(r =>
+    (r.StudentName || '').toLowerCase().includes(search) ||
+    (r.EventName  || '').toLowerCase().includes(search) ||
+    (r.House      || '').toLowerCase().includes(search)
+  );
+
+  const houseObj = h => housesData.find(x => isHouseMatch(x.HouseName, h));
+  const hColor   = h => (houseObj(h) && houseObj(h).Color) ? houseObj(h).Color : '#c9a054';
+
+  const grid = document.getElementById('photo-grid');
+  if (!data.length) {
+    grid.innerHTML = '<p class="text-muted" style="padding:2rem">No winners found.</p>';
+    return;
+  }
+
+  grid.innerHTML = data.map((r, idx) => {
+    const hc = hColor(r.House);
+    const thumb = r.PhotoUrl ? `<img src="${getGoogleDriveThumbUrl(r.PhotoUrl)}" 
+      style="width:100%;height:160px;object-fit:cover;border-radius:10px 10px 0 0;display:block;">` 
+      : `<div style="width:100%;height:160px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;background:hsla(220,14%,20%,.6);">
+           <span style="font-size:3rem;opacity:.35">👤</span>
+         </div>`;
+    return `
+      <div class="card" style="padding:0;overflow:hidden;border:1.5px solid ${hc}44;border-radius:12px;">
+        ${thumb}
+        <div style="padding:0.85rem 0.9rem 0.9rem;">
+          <div style="font-weight:800;font-size:1rem;margin-bottom:0.15rem;">${r.StudentName}</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.1rem;">${r.EventName}</div>
+          <div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.6rem;">
+            <span class="badge" style="background:${hc}22;color:${hc};font-size:0.7rem;">${r.House}</span>
+            <span class="badge badge-gold" style="font-size:0.7rem;">${r.Position}</span>
+          </div>
+          ${r.PhotoUrl 
+            ? `<div style="font-size:0.72rem;color:var(--accent3);">✓ Photo uploaded</div>
+               <label style="font-size:0.78rem;color:var(--text-muted);margin-top:0.4rem;display:block;">Replace photo</label>
+               <input type="file" id="photo-file-${idx}" accept="image/*" style="font-size:0.78rem;width:100%;">
+               <button class="btn btn-secondary btn-sm w-full" style="margin-top:0.4rem;" 
+                 data-idx="${idx}" data-event-id="${r.EventID}" data-student-name="${r.StudentName.replace(/"/g, '&quot;')}"
+                 onclick="uploadWinnerPhoto(this)">🔄 Replace</button>`
+            : `<input type="file" id="photo-file-${idx}" accept="image/*" style="font-size:0.78rem;width:100%;"><button class="btn btn-primary btn-sm w-full" style="margin-top:0.5rem;"
+                 data-idx="${idx}" data-event-id="${r.EventID}" data-student-name="${r.StudentName.replace(/"/g, '&quot;')}"
+                 onclick="uploadWinnerPhoto(this)">📸 Upload Photo</button>`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function uploadWinnerPhoto(btn) {
+  const idx = btn.dataset.idx;
+  const eventId = btn.dataset.eventId;
+  const studentName = btn.dataset.studentName;
+  const fileInput = document.getElementById(`photo-file-${idx}`);
+  if (!fileInput || !fileInput.files[0]) { toast('Select a photo first', 'error'); return; }
+  toast('Uploading photo…', 'info');
+  try {
+    const b64data = await fileToBase64(fileInput.files[0]);
+    const res = await apiPost('uploadPhoto', { ...b64data, studentName, house: '', dept: '' });
+    if (!res.url) { toast('Upload failed', 'error'); return; }
+    // Save URL back to Results sheet
+    await apiPost('saveResultPhoto', { eventId, studentName, photoUrl: res.url });
+    toast('✅ Photo uploaded and saved!', 'success');
+    await loadAll();
+    renderPhotoGrid();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
 }
 
 function printResults() {
@@ -1165,7 +1257,7 @@ async function openReport(type) {
   } else if (type === 'game') {
     ttl = 'Game‑wise Participant List';
     for (const ev of eventsData) {
-      const stu = finalList.filter(f => f.EventID === ev.EventID);
+      const stu = finalList.filter(f => String(f.EventID) === String(ev.EventID));
       const rows = stu.map((s, i) => {
         const roll = getStudentRoll(s.StudentName);
         return `<tr><td>${i+1}</td><td><strong>${s.StudentName}</strong></td><td>${roll}</td><td>${s.House}</td><td>${s.Department}</td><td></td></tr>`;
@@ -1262,7 +1354,7 @@ function filterCertificates() {
   const evt = document.getElementById('cert-filter-event').value;
   const hse = document.getElementById('cert-filter-house').value;
   let filtered = resultsData;
-  if (evt) filtered = filtered.filter(r => r.EventID === evt);
+  if (evt) filtered = filtered.filter(r => String(r.EventID) === String(evt));
   if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
   renderCertificatesList(filtered);
 }
@@ -1418,7 +1510,7 @@ async function printAllCertificates() {
   const evt = document.getElementById('cert-filter-event').value;
   const hse = document.getElementById('cert-filter-house').value;
   let filtered = resultsData;
-  if (evt) filtered = filtered.filter(r => r.EventID === evt);
+  if (evt) filtered = filtered.filter(r => String(r.EventID) === String(evt));
   if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
   
   if (!filtered.length) {
