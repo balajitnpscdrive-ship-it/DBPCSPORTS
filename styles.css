@@ -701,15 +701,16 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 
 /* Header Title Hierarchy */
 .cert-header-title h2 {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.35rem;
+  font-family: 'Cinzel', 'Georgia', serif;
+  font-size: 2rem;
   font-weight: 900;
   color: #1a1a1a; /* Bold black like reference */
   text-transform: uppercase;
   margin-bottom: 0;
-  line-height: 1.2;
-  letter-spacing: 0.5px;
-  white-space: normal; /* Allow 2 lines */
+  line-height: 1.1;
+  letter-spacing: 1.5px;
+  white-space: nowrap; /* Single line */
+  text-shadow: 1px 1px 0px rgba(201, 160, 84, 0.15); /* Royal shadow */
 }
 
 /* h5/h4 in header no longer used - moved to cert-event-block */
@@ -988,6 +989,10 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   body.printing-certificates {
     background: #fff !important;
     color: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
   }
 
   body.printing-certificates .sidebar,
@@ -1024,8 +1029,10 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   }
 
   .cert-page-break {
-    page-break-after: always;
-    page-break-inside: avoid;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    break-after: page !important;
+    break-inside: avoid !important;
     display: block !important;
     width: 210mm !important;
     height: 297mm !important;
@@ -1033,6 +1040,7 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     padding: 6mm !important; /* Very tight outer page padding - maximize cert canvas */
     background: #fff !important;
     position: relative !important;
+    overflow: hidden !important; /* Prevent vertical overflow blank pages */
   }
 
   .cert-page-break .cert-card {
