@@ -702,14 +702,14 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 /* Header Title Hierarchy */
 .cert-header-title h2 {
   font-family: 'Cinzel', 'Georgia', serif;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 900;
   color: #1a1a1a; /* Bold black like reference */
   text-transform: uppercase;
   margin-bottom: 0;
-  line-height: 1.1;
-  letter-spacing: 1.5px;
-  white-space: nowrap; /* Single line */
+  line-height: 1.25;
+  letter-spacing: 1px;
+  white-space: normal; /* Allow 2 lines */
   text-shadow: 1px 1px 0px rgba(201, 160, 84, 0.15); /* Royal shadow */
 }
 
@@ -992,7 +992,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     margin: 0 !important;
     padding: 0 !important;
     width: 210mm !important;
-    height: 297mm !important;
+    height: auto !important; /* Allow growing for multiple pages */
+    min-height: 100% !important;
   }
 
   body.printing-certificates .sidebar,
@@ -1009,7 +1010,7 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     padding: 0 !important;
     background: #fff !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important; /* Allow growing */
   }
   
   body.printing-certificates #sec-certificates {
@@ -1017,7 +1018,7 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important; /* Allow growing */
   }
 
   body.printing-certificates .card {
