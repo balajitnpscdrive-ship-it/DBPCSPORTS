@@ -386,8 +386,27 @@
           <button class="btn btn-primary btn-sm" onclick="printAllCertificates()">🖨️ Print All (Bulk)</button>
         </div>
       </div>
+
+      <!-- Upload Winners CSV Card -->
       <div class="card no-print mb-3">
-        <h3 class="mb-2">Winner List</h3>
+        <h3 class="mb-2">Upload Winners CSV</h3>
+        <p class="text-muted mb-2" style="font-size:.85rem">
+          CSV columns: <code>EventName, Position, StudentName, House, Department</code> (Optional: <code>EventID, Points, PhotoUrl, IsTeam</code>)
+        </p>
+        <div class="flex gap-2 align-items-center" style="flex-wrap: wrap;">
+          <input type="file" id="cert-csv-file" accept=".csv" style="display:none" onchange="handleCertCSVSelect(this)">
+          <label for="cert-csv-file" class="btn btn-secondary btn-sm" style="margin: 0; cursor: pointer;">📂 Choose CSV File</label>
+          <span id="cert-csv-status" class="text-muted" style="font-size:0.85rem">No file chosen</span>
+          <button class="btn btn-primary btn-sm hidden" id="cert-csv-load-btn" onclick="loadCertCSV()">Load CSV Winners</button>
+          <button class="btn btn-success btn-sm hidden" id="cert-csv-import-btn" onclick="importCertCSVToDB()">💾 Save to Google Sheet</button>
+        </div>
+      </div>
+
+      <div class="card no-print mb-3">
+        <div style="display:flex; justify-content:space-between; align-items:center;" class="mb-2">
+          <h3 style="margin:0">Winner List <span id="cert-list-mode-badge" class="badge badge-gold hidden" style="vertical-align: middle;">CSV Mode</span></h3>
+          <button id="cert-reset-db-btn" class="btn btn-secondary btn-sm hidden" onclick="resetCertListSource()">Reset to Database Winners</button>
+        </div>
         <div class="table-wrap" style="max-height:300px;overflow-y:auto">
           <table>
             <thead>
@@ -447,6 +466,8 @@ const DEFAULT_POINTS_CONFIG = [
   { Category: 'Discipline', Position: 'RunnerUp', Points: 7 }
 ];
 let user, eventsData=[], housesData=[], studentsData=[], pointsConfig=[], resultsData=[];
+let activeCertSource = 'database';
+let csvResultsData = [];
 let awardScanned = null;
 let chartInstance = null;
 
@@ -1350,10 +1371,143 @@ async function openReport(type) {
 }
 
 // ── Certificates ──────────────────────────────────────────────────────────────
+function handleCertCSVSelect(input) {
+  const file = input.files[0];
+  const status = document.getElementById('cert-csv-status');
+  const loadBtn = document.getElementById('cert-csv-load-btn');
+  const importBtn = document.getElementById('cert-csv-import-btn');
+  
+  if (file) {
+    status.textContent = file.name;
+    loadBtn.classList.remove('hidden');
+    importBtn.classList.add('hidden');
+  } else {
+    status.textContent = 'No file chosen';
+    loadBtn.classList.add('hidden');
+    importBtn.classList.add('hidden');
+  }
+}
+
+async function loadCertCSV() {
+  const fileInput = document.getElementById('cert-csv-file');
+  const file = fileInput.files[0];
+  if (!file) { toast('Select a CSV file first', 'error'); return; }
+  
+  try {
+    const text = await file.text();
+    const rows = parseCSV(text);
+    if (!rows.length) { toast('No valid rows found in CSV', 'error'); return; }
+    
+    // Map CSV rows to Results structure
+    csvResultsData = rows.map(r => {
+      const getValue = (keys) => {
+        for (const k of keys) {
+          const matchKey = Object.keys(r).find(x => x.toLowerCase() === k.toLowerCase());
+          if (matchKey) return r[matchKey];
+        }
+        return '';
+      };
+      
+      const eventName = getValue(['EventName', 'Event Name', 'Game', 'Event']);
+      const studentName = getValue(['StudentName', 'Student Name', 'Winner', 'Name', 'Student']);
+      const house = getValue(['House', 'HouseName', 'House Name', 'Team']);
+      
+      if (!eventName || !studentName || !house) {
+        throw new Error('CSV must contain columns for EventName, StudentName, and House');
+      }
+      
+      return {
+        EventID: getValue(['EventID', 'Event ID', 'ID']) || String(eventName).trim().replace(/\s+/g, '-').toLowerCase(),
+        EventName: String(eventName).trim(),
+        Position: getValue(['Position', 'Rank', 'Place']) || '1st',
+        StudentName: String(studentName).trim(),
+        Department: getValue(['Department', 'Dept', 'Branch']) || '',
+        House: String(house).trim(),
+        Points: Number(getValue(['Points', 'Score'])) || 0,
+        PhotoUrl: getValue(['PhotoUrl', 'Photo', 'Photo Url', 'Image']) || '',
+        IsTeam: String(getValue(['IsTeam', 'Team Event', 'TeamResult'])).toLowerCase() === 'true'
+      };
+    });
+    
+    activeCertSource = 'csv';
+    toast(`Successfully loaded ${csvResultsData.length} winners from CSV!`, 'success');
+    
+    document.getElementById('cert-list-mode-badge').classList.remove('hidden');
+    document.getElementById('cert-reset-db-btn').classList.remove('hidden');
+    document.getElementById('cert-csv-import-btn').classList.remove('hidden');
+    
+    filterCertificates();
+  } catch(e) {
+    toast('Error loading CSV: ' + e.message, 'error');
+  }
+}
+
+async function importCertCSVToDB() {
+  if (!csvResultsData || !csvResultsData.length) { toast('No winners to import', 'error'); return; }
+  
+  const confirmMsg = `Are you sure you want to import these ${csvResultsData.length} winners to the Google Sheet? This will also award points to their respective houses.`;
+  if (!confirm(confirmMsg)) return;
+  
+  const importBtn = document.getElementById('cert-csv-import-btn');
+  const originalText = importBtn.textContent;
+  importBtn.disabled = true;
+  
+  toast(`Starting import of ${csvResultsData.length} winners…`, 'info');
+  
+  let successCount = 0;
+  for (let i = 0; i < csvResultsData.length; i++) {
+    const w = csvResultsData[i];
+    importBtn.textContent = `Saving (${i + 1}/${csvResultsData.length})…`;
+    try {
+      await apiPost('awardPoints', {
+        eventId: w.EventID,
+        eventName: w.EventName,
+        position: w.Position,
+        studentName: w.StudentName,
+        dept: w.Department,
+        house: w.House,
+        points: w.Points,
+        photoUrl: w.PhotoUrl,
+        isTeam: w.IsTeam
+      });
+      successCount++;
+    } catch(err) {
+      console.error(`Failed to import winner ${w.StudentName} for ${w.EventName}:`, err);
+    }
+  }
+  
+  importBtn.disabled = false;
+  importBtn.textContent = originalText;
+  
+  if (successCount === csvResultsData.length) {
+    toast(`Successfully imported all ${successCount} winners!`, 'success');
+  } else {
+    toast(`Import complete. Saved ${successCount} of ${csvResultsData.length} winners.`, 'warning');
+  }
+  
+  await loadAll();
+  resetCertListSource();
+}
+
+function resetCertListSource() {
+  activeCertSource = 'database';
+  
+  document.getElementById('cert-list-mode-badge').classList.add('hidden');
+  document.getElementById('cert-reset-db-btn').classList.add('hidden');
+  document.getElementById('cert-csv-import-btn').classList.add('hidden');
+  
+  const fileInput = document.getElementById('cert-csv-file');
+  if (fileInput) fileInput.value = '';
+  document.getElementById('cert-csv-status').textContent = 'No file chosen';
+  document.getElementById('cert-csv-load-btn').classList.add('hidden');
+  
+  filterCertificates();
+}
+
 function filterCertificates() {
   const evt = document.getElementById('cert-filter-event').value;
   const hse = document.getElementById('cert-filter-house').value;
-  let filtered = resultsData;
+  let filtered = activeCertSource === 'csv' ? csvResultsData : resultsData;
   if (evt) filtered = filtered.filter(r => String(r.EventID) === String(evt));
   if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
   renderCertificatesList(filtered);
@@ -1383,15 +1537,18 @@ function renderCertificatesList(list) {
 }
 
 async function renderCertificateHTML(r, s) {
-  const [logoSrc, founderSrc, studentSrc] = await Promise.all([
+  const houseKey = 'logo_' + String(r.House || '').trim().toUpperCase();
+  const houseLogoUrl = s[houseKey] || '';
+
+  const [logoSrc, founderSrc, houseLogoSrc] = await Promise.all([
     imgToDataUrl(s.LogoUrl || ''),
     imgToDataUrl(s.FounderUrl || ''),
-    r.PhotoUrl ? imgToDataUrl(r.PhotoUrl) : Promise.resolve('')
+    houseLogoUrl ? imgToDataUrl(houseLogoUrl) : Promise.resolve('')
   ]);
 
   const finalLogo = logoSrc || getGoogleDriveThumbUrl(s.LogoUrl || '');
   const finalFounder = founderSrc || getGoogleDriveThumbUrl(s.FounderUrl || '');
-  const finalStudent = studentSrc || (r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '');
+  const finalHouseLogo = houseLogoSrc || (houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '');
 
   const isTeamResult = r.IsTeam === true || r.IsTeam === 'true' || ['HouseDecoration','MarchPast','Discipline'].includes(r.EventName);
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -1408,6 +1565,30 @@ async function renderCertificateHTML(r, s) {
   // Look up house color
   const houseObj = housesData.find(h => isHouseMatch(h.HouseName, r.House));
   const houseColor = houseObj && houseObj.Color ? houseObj.Color : '#c9a054';
+
+  // Construct logo html (fallback to beautiful dynamic SVG crest if no image uploaded)
+  let logoContent = '';
+  if (finalHouseLogo) {
+    logoContent = `<img src="${finalHouseLogo}" alt="House Logo" style="object-fit: contain !important; width: 80%; height: 80%; margin: 10%; background: transparent !important;">`;
+  } else {
+    const initial = String(r.House || '?').trim().charAt(0).toUpperCase();
+    logoContent = `
+      <svg viewBox="0 0 100 100" style="width: 80%; height: 80%; margin: 10%; display: block;">
+        <!-- Shield Background -->
+        <path d="M50,7 L82,16 L78,54 C78,72 64,84 50,91 C36,84 22,72 22,54 L18,16 Z" fill="${houseColor}15" stroke="${houseColor}" stroke-width="2.5" />
+        <!-- Inner Border -->
+        <path d="M50,12 L76,19 L72,52 C72,67 60,78 50,84 C40,78 28,67 28,52 L24,19 Z" fill="none" stroke="#c9a054" stroke-width="1" stroke-dasharray="2,1" />
+        <!-- Center Initial -->
+        <text x="50" y="55" font-family="'Cinzel', 'Georgia', serif" font-size="34" font-weight="bold" fill="#c9a054" text-anchor="middle" dominant-baseline="middle">${initial}</text>
+        <!-- Stars/Decorations -->
+        <g fill="#c9a054">
+          <polygon points="50,68 52,72 56,72 53,75 54,79 50,77 46,79 47,75 44,72 48,72" />
+          <circle cx="36" cy="62" r="1.5" />
+          <circle cx="64" cy="62" r="1.5" />
+        </g>
+      </svg>
+    `;
+  }
 
   return `
     <div class="cert-page-break">
@@ -1439,17 +1620,11 @@ async function renderCertificateHTML(r, s) {
           <div class="cert-award-text">Certificate of Achievement</div>
         </div>
         
-        <!-- Photo -->
+        <!-- House Logo -->
         <div class="cert-middle-section">
-          ${finalStudent ? `
-            <div class="cert-photo-frame" style="border-color: ${houseColor} !important;">
-              <img src="${finalStudent}" alt="${isTeamResult ? 'Team Photo' : 'Winner Photo'}">
-            </div>
-          ` : `
-            <div class="cert-photo-frame" style="border-color: ${houseColor} !important; border-style: dashed !important; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: 13px; color: #aaa; font-weight: 600; text-transform: uppercase;">${isTeamResult ? 'Team' : 'Photo'}</span>
-            </div>
-          `}
+          <div class="cert-photo-frame" style="border-color: ${houseColor} !important; display: flex; align-items: center; justify-content: center; background: #fff;">
+            ${logoContent}
+          </div>
         </div>
 
         <!-- Gold Hexagon Name Banner -->
