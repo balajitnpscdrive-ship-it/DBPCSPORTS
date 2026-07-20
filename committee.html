@@ -311,7 +311,23 @@
             </div>
           </div>
           <button class="btn btn-primary w-full mt-1" onclick="uploadAssets()">☁️ Upload to Drive</button>
+        </div>
 
+        <div class="card">
+          <h3 class="mb-2">Upload House Logos</h3>
+          <p class="text-muted mb-2" style="font-size:.82rem">Select a house, upload its logo to Google Drive, and preview it in thumbnail format.</p>
+          <div class="form-group">
+            <label>Select House</label>
+            <select id="s-house-select" onchange="loadHouseLogoPreview()"></select>
+          </div>
+          <div class="form-group">
+            <label>House Logo Image</label>
+            <input type="file" id="up-house-logo" accept="image/*" onchange="previewSelectedHouseLogo(this)"/>
+            <div id="preview-house-logo-container" style="margin-top:.5rem; display:none;">
+              <img id="preview-house-logo" src="" alt="House Logo Preview" style="height:80px; border-radius:6px; object-fit: contain; background: #fafafa; border: 1px solid var(--glass-border); padding: 5px;"/>
+            </div>
+          </div>
+          <button class="btn btn-primary w-full mt-1" onclick="uploadHouseLogo()">☁️ Upload House Logo</button>
         </div>
       </div>
     </section>
@@ -1148,6 +1164,85 @@ async function loadSettings() {
   if (s.LogoUrl) { sbLogo.src = getGoogleDriveThumbUrl(s.LogoUrl); sbLogo.style.display='block'; }
   document.getElementById('sig-incharge').textContent = s.CommitteeInChargeName || 'Sports Incharge';
   document.getElementById('sig-principal').textContent = s.PrincipalName || 'Principal';
+
+  // Populate House select dynamically in Branding tab
+  const shs = document.getElementById('s-house-select');
+  if (shs && housesData && housesData.length > 0) {
+    const currentVal = shs.value;
+    shs.innerHTML = '';
+    housesData.forEach(h => {
+      shs.innerHTML += `<option value="${h.HouseName}">${h.HouseName}</option>`;
+    });
+    if (currentVal && housesData.some(h => h.HouseName === currentVal)) {
+      shs.value = currentVal;
+    }
+    loadHouseLogoPreview();
+  }
+}
+
+async function loadHouseLogoPreview() {
+  const house = document.getElementById('s-house-select').value;
+  const previewImg = document.getElementById('preview-house-logo');
+  const previewCont = document.getElementById('preview-house-logo-container');
+  if (!house) {
+    previewCont.style.display = 'none';
+    return;
+  }
+  
+  const s = await getSettings();
+  const key = 'logo_' + String(house).trim().toUpperCase();
+  const logoUrl = s[key] || '';
+  
+  if (logoUrl) {
+    previewImg.src = getGoogleDriveThumbUrl(logoUrl);
+    previewCont.style.display = 'block';
+  } else {
+    previewImg.src = '';
+    previewCont.style.display = 'none';
+  }
+  // Clear file input
+  document.getElementById('up-house-logo').value = '';
+}
+
+function previewSelectedHouseLogo(input) {
+  const file = input.files[0];
+  if (file) {
+    const previewImg = document.getElementById('preview-house-logo');
+    const previewCont = document.getElementById('preview-house-logo-container');
+    previewImg.src = URL.createObjectURL(file);
+    previewCont.style.display = 'block';
+  }
+}
+
+async function uploadHouseLogo() {
+  const house = document.getElementById('s-house-select').value;
+  if (!house) { toast('Select a house first', 'error'); return; }
+  const file = document.getElementById('up-house-logo').files[0];
+  if (!file) { toast('Select an image file first', 'error'); return; }
+
+  const btn = document.querySelector('[onclick="uploadHouseLogo()"]');
+  if (btn) btn.disabled = true;
+
+  toast(`Uploading logo for ${house}…`, 'info');
+  try {
+    const b = await fileToBase64(file);
+    const r = await apiUpload('uploadPhoto', { ...b, studentName: 'logo_' + house.toLowerCase(), house: house, dept: '' });
+    if (!r.url) throw new Error('No URL returned for logo');
+    
+    // Save to Settings sheet
+    const key = 'logo_' + String(house).trim().toUpperCase();
+    await apiPost('saveSetting', { Key: key, Value: r.url });
+    
+    _settings = null; // bust cache
+    toast(`✅ Logo for ${house} uploaded successfully!`, 'success');
+    
+    await loadSettings();
+  } catch(err) {
+    toast('Upload failed: ' + err.message, 'error');
+    console.error('uploadHouseLogo error:', err);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 async function saveSettings() {
@@ -1539,16 +1634,17 @@ function renderCertificatesList(list) {
 async function renderCertificateHTML(r, s) {
   const houseKey = 'logo_' + String(r.House || '').trim().toUpperCase();
   const houseLogoUrl = s[houseKey] || '';
+  const thumbUrl = houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '';
 
   const [logoSrc, founderSrc, houseLogoSrc] = await Promise.all([
     imgToDataUrl(s.LogoUrl || ''),
     imgToDataUrl(s.FounderUrl || ''),
-    houseLogoUrl ? imgToDataUrl(houseLogoUrl) : Promise.resolve('')
+    thumbUrl ? imgToDataUrl(thumbUrl) : Promise.resolve('')
   ]);
 
   const finalLogo = logoSrc || getGoogleDriveThumbUrl(s.LogoUrl || '');
   const finalFounder = founderSrc || getGoogleDriveThumbUrl(s.FounderUrl || '');
-  const finalHouseLogo = houseLogoSrc || (houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '');
+  const finalHouseLogo = houseLogoSrc || thumbUrl;
 
   const isTeamResult = r.IsTeam === true || r.IsTeam === 'true' || ['HouseDecoration','MarchPast','Discipline'].includes(r.EventName);
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
