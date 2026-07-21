@@ -713,6 +713,18 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   text-shadow: 1px 1px 0px rgba(201, 160, 84, 0.15); /* Royal shadow */
 }
 
+.cert-college-place {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #c9a054; /* Gold branding color */
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-top: 0.25rem;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
 /* h5/h4 in header no longer used - moved to cert-event-block */
 .cert-header-title h5,
 .cert-header-title h4 {
