@@ -1704,9 +1704,10 @@ async function renderCertificateHTML(r, s) {
           </div>
           <div class="cert-header-title">
             <h2>${s.CollegeName || 'COLLEGE NAME'}</h2>
+            <div class="cert-college-place">THIRUKAZHUKUNDRAM</div>
           </div>
           <div class="cert-header-side">
-            ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div><small style="font-size:8px;font-weight:bold;margin-top:4px;color:#333;text-transform:uppercase;">FOUNDER</small>` : '<div style="width:88px"></div>'}
+            ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
           </div>
         </div>
 
@@ -1761,6 +1762,17 @@ async function renderCertificateHTML(r, s) {
     </div>
   `;
 }
+function waitForImages(container) {
+  const imgs = Array.from(container.getElementsByTagName('img'));
+  const promises = imgs.map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.addEventListener('load', resolve);
+      img.addEventListener('error', resolve); // Resolve anyway so we do not hang the UI
+    });
+  });
+  return Promise.all(promises);
+}
 
 async function printSingleCertificate(winner) {
   const s = await getSettings();
@@ -1770,17 +1782,18 @@ async function printSingleCertificate(winner) {
   const printArea = document.getElementById('cert-print-area');
   printArea.innerHTML = await renderCertificateHTML(winner, s);
   
+  await waitForImages(printArea);
   setTimeout(() => {
     window.print();
     document.body.classList.remove('printing-certificates');
     printArea.innerHTML = '';
-  }, 500);
+  }, 150);
 }
 
 async function printAllCertificates() {
   const evt = document.getElementById('cert-filter-event').value;
   const hse = document.getElementById('cert-filter-house').value;
-  let filtered = resultsData;
+  let filtered = activeCertSource === 'csv' ? csvResultsData : resultsData;
   if (evt) filtered = filtered.filter(r => String(r.EventID) === String(evt));
   if (hse) filtered = filtered.filter(r => isHouseMatch(r.House, hse));
   
@@ -1802,11 +1815,12 @@ async function printAllCertificates() {
   }
   printArea.innerHTML = html;
   
+  await waitForImages(printArea);
   setTimeout(() => {
     window.print();
     document.body.classList.remove('printing-certificates');
     printArea.innerHTML = '';
-  }, 1000);
+  }, 250);
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
