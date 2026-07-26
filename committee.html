@@ -329,6 +329,32 @@
           </div>
           <button class="btn btn-primary w-full mt-1" onclick="uploadHouseLogo()">☁️ Upload House Logo</button>
         </div>
+
+        <div class="card">
+          <h3 class="mb-2">Certificate Layout &amp; Wording</h3>
+          <p class="text-muted mb-2" style="font-size:.82rem">Configure certificate watermark settings and customize wording presets for Sports, Cultural, or Academic events.</p>
+          <div class="form-group">
+            <label>Show College Logo Watermark</label>
+            <select id="s-show-watermark">
+              <option value="Yes">Yes, show watermark in background</option>
+              <option value="No">No, keep background clean</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Wording Theme Preset</label>
+            <select id="s-wording-preset" onchange="applyWordingPreset(this.value)">
+              <option value="sports">🏃 Sports Meet (Default)</option>
+              <option value="cultural">🎨 Cultural &amp; Arts Events</option>
+              <option value="academic">📚 Academic &amp; Science Events</option>
+              <option value="custom">✍️ Custom Wording</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Prestigious Wording Text</label>
+            <textarea id="s-prestigious-wording" rows="4" style="width:100%; padding:0.6rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.85rem; resize:vertical; line-height:1.4;"></textarea>
+          </div>
+          <button class="btn btn-primary w-full mt-1" onclick="saveCertificateSettings()">💾 Save Certificate Settings</button>
+        </div>
       </div>
     </section>
 
@@ -1165,6 +1191,23 @@ async function loadSettings() {
   document.getElementById('sig-incharge').textContent = s.CommitteeInChargeName || 'Sports Incharge';
   document.getElementById('sig-principal').textContent = s.PrincipalName || 'Principal';
 
+  // Load Certificate Watermark & Wording Settings
+  document.getElementById('s-show-watermark').value = s.ShowWatermark || 'Yes';
+  const wordingVal = s.PrestigiousWording || "In recognition of outstanding performance, dedication, and exemplary achievement displayed during the event.";
+  document.getElementById('s-prestigious-wording').value = wordingVal;
+  
+  // Set preset drop-down match
+  const presetDropdown = document.getElementById('s-wording-preset');
+  if (wordingVal.includes("athletic performance") || wordingVal.includes("sportsmanship")) {
+    presetDropdown.value = 'sports';
+  } else if (wordingVal.includes("creative talent") || wordingVal.includes("Cultural Fest")) {
+    presetDropdown.value = 'cultural';
+  } else if (wordingVal.includes("academic achievement") || wordingVal.includes("academic endeavors")) {
+    presetDropdown.value = 'academic';
+  } else {
+    presetDropdown.value = 'custom';
+  }
+
   // Populate House select dynamically in Branding tab
   const shs = document.getElementById('s-house-select');
   if (shs && housesData && housesData.length > 0) {
@@ -1258,6 +1301,37 @@ async function saveSettings() {
   }
   _settings = null; // bust cache
   toast('Settings saved', 'success');
+}
+
+function applyWordingPreset(val) {
+  const wordingTextarea = document.getElementById('s-prestigious-wording');
+  if (val === 'sports') {
+    wordingTextarea.value = "In recognition of outstanding athletic performance, dedication, and exemplary sportsmanship displayed during the Annual Sports Meet.";
+  } else if (val === 'cultural') {
+    wordingTextarea.value = "In recognition of exceptional creative talent, artistic expression, and outstanding performance displayed during the Annual Cultural Fest.";
+  } else if (val === 'academic') {
+    wordingTextarea.value = "In recognition of superior academic achievement, intellectual excellence, and outstanding merit displayed in academic endeavors.";
+  }
+}
+
+async function saveCertificateSettings() {
+  const showWatermark = document.getElementById('s-show-watermark').value;
+  const prestigiousWording = document.getElementById('s-prestigious-wording').value;
+
+  const btn = document.querySelector('[onclick="saveCertificateSettings()"]');
+  if (btn) btn.disabled = true;
+
+  try {
+    toast('Saving certificate settings…', 'info');
+    await apiPost('saveSetting', { Key: 'ShowWatermark', Value: showWatermark });
+    await apiPost('saveSetting', { Key: 'PrestigiousWording', Value: prestigiousWording });
+    _settings = null; // bust cache
+    toast('✅ Certificate settings saved!', 'success');
+  } catch (err) {
+    toast('Save failed: ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 async function uploadAssets() {
@@ -1656,7 +1730,8 @@ async function renderCertificateHTML(r, s) {
   else if (r.Position === 'Winner') posText = 'Winner';
   else if (r.Position === 'RunnerUp') posText = 'Runner Up';
 
-  const prestigiousWording = "In recognition of outstanding athletic performance, dedication, and exemplary sportsmanship displayed during the Annual Sports Meet.";
+  const prestigiousWording = s.PrestigiousWording || "In recognition of outstanding performance, dedication, and exemplary achievement displayed during the event.";
+  const showWatermark = (s.ShowWatermark !== 'No');
 
   // Look up house color
   const houseObj = housesData.find(h => isHouseMatch(h.HouseName, r.House));
@@ -1689,7 +1764,7 @@ async function renderCertificateHTML(r, s) {
   return `
     <div class="cert-page-break">
       <div class="cert-card">
-        <div class="cert-watermark" style="background-image: url('${finalLogo}')"></div>
+        ${showWatermark && finalLogo ? `<div class="cert-watermark" style="background-image: url('${finalLogo}')"></div>` : ''}
         
         <!-- Vector Ornamental Corners -->
         <svg class="cert-corner top-left" viewBox="0 0 100 100" width="32" height="32"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
@@ -1742,7 +1817,7 @@ async function renderCertificateHTML(r, s) {
 
         <!-- Prestigious Wording -->
         <div class="cert-prestigious-wording">
-          Demonstrating exceptional athleticism and sportsmanship, your outstanding performance in this sporting arena has contributed immensely to the legacy of our institution.
+          ${prestigiousWording}
         </div>
 
         <!-- Footer: Secretary | Principal (no date in center) -->
