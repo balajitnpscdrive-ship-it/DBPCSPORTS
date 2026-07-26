@@ -334,10 +334,21 @@
           <h3 class="mb-2">Certificate Layout &amp; Wording</h3>
           <p class="text-muted mb-2" style="font-size:.82rem">Configure certificate watermark settings and customize wording presets for Sports, Cultural, or Academic events.</p>
           <div class="form-group">
+            <label>Program Name / Event Title</label>
+            <input type="text" id="s-cert-program-name" style="width:100%; padding:0.65rem 1rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.95rem;"/>
+          </div>
+          <div class="form-group">
             <label>Show College Logo Watermark</label>
             <select id="s-show-watermark">
               <option value="Yes">Yes, show watermark in background</option>
               <option value="No">No, keep background clean</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Center Frame Display Content</label>
+            <select id="s-cert-center-display">
+              <option value="photo">👤 Student Photo (or placeholder)</option>
+              <option value="logo">🏠 House Logo / Dynamic Crest</option>
             </select>
           </div>
           <div class="form-group">
@@ -1192,7 +1203,9 @@ async function loadSettings() {
   document.getElementById('sig-principal').textContent = s.PrincipalName || 'Principal';
 
   // Load Certificate Watermark & Wording Settings
+  document.getElementById('s-cert-program-name').value = s.EventTitle || '';
   document.getElementById('s-show-watermark').value = s.ShowWatermark || 'Yes';
+  document.getElementById('s-cert-center-display').value = s.CertCenterDisplay || 'logo';
   const wordingVal = s.PrestigiousWording || "In recognition of outstanding performance, dedication, and exemplary achievement displayed during the event.";
   document.getElementById('s-prestigious-wording').value = wordingVal;
   
@@ -1300,6 +1313,11 @@ async function saveSettings() {
     await apiPost('saveSetting', { Key: key, Value: document.getElementById(elId).value });
   }
   _settings = null; // bust cache
+  
+  // Sync the certificate program name input
+  const certInput = document.getElementById('s-cert-program-name');
+  if (certInput) certInput.value = document.getElementById('s-event-title').value;
+
   toast('Settings saved', 'success');
 }
 
@@ -1315,7 +1333,9 @@ function applyWordingPreset(val) {
 }
 
 async function saveCertificateSettings() {
+  const eventTitle = document.getElementById('s-cert-program-name').value;
   const showWatermark = document.getElementById('s-show-watermark').value;
+  const certCenterDisplay = document.getElementById('s-cert-center-display').value;
   const prestigiousWording = document.getElementById('s-prestigious-wording').value;
 
   const btn = document.querySelector('[onclick="saveCertificateSettings()"]');
@@ -1323,9 +1343,16 @@ async function saveCertificateSettings() {
 
   try {
     toast('Saving certificate settings…', 'info');
+    await apiPost('saveSetting', { Key: 'EventTitle', Value: eventTitle });
     await apiPost('saveSetting', { Key: 'ShowWatermark', Value: showWatermark });
+    await apiPost('saveSetting', { Key: 'CertCenterDisplay', Value: certCenterDisplay });
     await apiPost('saveSetting', { Key: 'PrestigiousWording', Value: prestigiousWording });
     _settings = null; // bust cache
+    
+    // Sync the other input field in case the user switches views
+    const otherInput = document.getElementById('s-event-title');
+    if (otherInput) otherInput.value = eventTitle;
+
     toast('✅ Certificate settings saved!', 'success');
   } catch (err) {
     toast('Save failed: ' + err.message, 'error');
@@ -1708,17 +1735,20 @@ function renderCertificatesList(list) {
 async function renderCertificateHTML(r, s) {
   const houseKey = 'logo_' + String(r.House || '').trim().toUpperCase();
   const houseLogoUrl = s[houseKey] || '';
-  const thumbUrl = houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '';
+  const houseLogoThumb = houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '';
+  const studentPhotoThumb = r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '';
 
-  const [logoSrc, founderSrc, houseLogoSrc] = await Promise.all([
+  const [logoSrc, founderSrc, houseLogoSrc, studentPhotoSrc] = await Promise.all([
     imgToDataUrl(s.LogoUrl || ''),
     imgToDataUrl(s.FounderUrl || ''),
-    thumbUrl ? imgToDataUrl(thumbUrl) : Promise.resolve('')
+    houseLogoThumb ? imgToDataUrl(houseLogoThumb) : Promise.resolve(''),
+    studentPhotoThumb ? imgToDataUrl(studentPhotoThumb) : Promise.resolve('')
   ]);
 
   const finalLogo = logoSrc || getGoogleDriveThumbUrl(s.LogoUrl || '');
   const finalFounder = founderSrc || getGoogleDriveThumbUrl(s.FounderUrl || '');
-  const finalHouseLogo = houseLogoSrc || thumbUrl;
+  const finalHouseLogo = houseLogoSrc || houseLogoThumb;
+  const finalStudentPhoto = studentPhotoSrc || studentPhotoThumb;
 
   const isTeamResult = r.IsTeam === true || r.IsTeam === 'true' || ['HouseDecoration','MarchPast','Discipline'].includes(r.EventName);
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -1732,33 +1762,47 @@ async function renderCertificateHTML(r, s) {
 
   const prestigiousWording = s.PrestigiousWording || "In recognition of outstanding performance, dedication, and exemplary achievement displayed during the event.";
   const showWatermark = (s.ShowWatermark !== 'No');
+  const centerDisplay = s.CertCenterDisplay || 'logo';
 
   // Look up house color
   const houseObj = housesData.find(h => isHouseMatch(h.HouseName, r.House));
   const houseColor = houseObj && houseObj.Color ? houseObj.Color : '#c9a054';
 
-  // Construct logo html (fallback to beautiful dynamic SVG crest if no image uploaded)
-  let logoContent = '';
-  if (finalHouseLogo) {
-    logoContent = `<img src="${finalHouseLogo}" alt="House Logo" style="object-fit: contain !important; width: 80%; height: 80%; margin: 10%; background: transparent !important;">`;
+  // Construct center circular content based on user preference
+  let centerContent = '';
+  if (centerDisplay === 'photo') {
+    if (finalStudentPhoto) {
+      centerContent = `<img src="${finalStudentPhoto}" alt="${isTeamResult ? 'Team Photo' : 'Winner Photo'}" style="width: 100%; height: 100%; object-fit: cover;">`;
+    } else {
+      centerContent = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; font-weight: bold; text-transform: uppercase;">
+          <span style="font-size: 2.5rem; margin-bottom: 0.2rem;">👤</span>
+          <span style="font-size: 0.7rem; letter-spacing: 1px;">Photo</span>
+        </div>
+      `;
+    }
   } else {
-    const initial = String(r.House || '?').trim().charAt(0).toUpperCase();
-    logoContent = `
-      <svg viewBox="0 0 100 100" style="width: 80%; height: 80%; margin: 10%; display: block;">
-        <!-- Shield Background -->
-        <path d="M50,7 L82,16 L78,54 C78,72 64,84 50,91 C36,84 22,72 22,54 L18,16 Z" fill="${houseColor}15" stroke="${houseColor}" stroke-width="2.5" />
-        <!-- Inner Border -->
-        <path d="M50,12 L76,19 L72,52 C72,67 60,78 50,84 C40,78 28,67 28,52 L24,19 Z" fill="none" stroke="#c9a054" stroke-width="1" stroke-dasharray="2,1" />
-        <!-- Center Initial -->
-        <text x="50" y="55" font-family="'Cinzel', 'Georgia', serif" font-size="34" font-weight="bold" fill="#c9a054" text-anchor="middle" dominant-baseline="middle">${initial}</text>
-        <!-- Stars/Decorations -->
-        <g fill="#c9a054">
-          <polygon points="50,68 52,72 56,72 53,75 54,79 50,77 46,79 47,75 44,72 48,72" />
-          <circle cx="36" cy="62" r="1.5" />
-          <circle cx="64" cy="62" r="1.5" />
-        </g>
-      </svg>
-    `;
+    if (finalHouseLogo) {
+      centerContent = `<img src="${finalHouseLogo}" alt="House Logo" style="object-fit: contain !important; width: 80%; height: 80%; margin: 10%; background: transparent !important;">`;
+    } else {
+      const initial = String(r.House || '?').trim().charAt(0).toUpperCase();
+      centerContent = `
+        <svg viewBox="0 0 100 100" style="width: 80%; height: 80%; margin: 10%; display: block;">
+          <!-- Shield Background -->
+          <path d="M50,7 L82,16 L78,54 C78,72 64,84 50,91 C36,84 22,72 22,54 L18,16 Z" fill="${houseColor}15" stroke="${houseColor}" stroke-width="2.5" />
+          <!-- Inner Border -->
+          <path d="M50,12 L76,19 L72,52 C72,67 60,78 50,84 C40,78 28,67 28,52 L24,19 Z" fill="none" stroke="#c9a054" stroke-width="1" stroke-dasharray="2,1" />
+          <!-- Center Initial -->
+          <text x="50" y="55" font-family="'Cinzel', 'Georgia', serif" font-size="34" font-weight="bold" fill="#c9a054" text-anchor="middle" dominant-baseline="middle">${initial}</text>
+          <!-- Stars/Decorations -->
+          <g fill="#c9a054">
+            <polygon points="50,68 52,72 56,72 53,75 54,79 50,77 46,79 47,75 44,72 48,72" />
+            <circle cx="36" cy="62" r="1.5" />
+            <circle cx="64" cy="62" r="1.5" />
+          </g>
+        </svg>
+      `;
+    }
   }
 
   return `
@@ -1792,10 +1836,10 @@ async function renderCertificateHTML(r, s) {
           <div class="cert-award-text">Certificate of Achievement</div>
         </div>
         
-        <!-- House Logo -->
+        <!-- House Logo or Student Photo -->
         <div class="cert-middle-section">
-          <div class="cert-photo-frame" style="border-color: ${houseColor} !important; display: flex; align-items: center; justify-content: center; background: #fff;">
-            ${logoContent}
+          <div class="cert-photo-frame" style="border-color: ${houseColor} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
+            ${centerContent}
           </div>
         </div>
 
