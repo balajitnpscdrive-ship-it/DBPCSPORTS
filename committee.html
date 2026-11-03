@@ -272,12 +272,101 @@
       <div class="topbar"><div class="topbar-title">Branding &amp; Settings</div></div>
       <div class="grid-2">
         <div class="card">
-          <h3 class="mb-2">College Information</h3>
+          <h3 class="mb-2" style="display:flex;align-items:center;gap:0.5rem;">
+            <span>🏛️</span> College Information &amp; Branding
+          </h3>
+
           <div class="form-group">
-            <label>College Name</label>
-            <input type="text" id="s-college-name"/>
+            <label>College Name Format / Layout</label>
+            <select id="s-college-name-layout" onchange="toggleCollegeNameLayoutFields()">
+              <option value="single">Single Line (e.g. DON BOSCO POLYTECHNIC COLLEGE)</option>
+              <option value="double">Two Lines / Split (Line 1: DON BOSCO | Line 2: POLYTECHNIC COLLEGE)</option>
+            </select>
           </div>
+
+          <div class="form-group" id="group-college-name-single">
+            <label>College Name (Single Line)</label>
+            <input type="text" id="s-college-name" value="DON BOSCO POLYTECHNIC COLLEGE" oninput="syncCollegeNameFields()"/>
+          </div>
+
+          <div id="group-college-name-double" class="grid-2 hidden">
+            <div class="form-group">
+              <label>College Name — Line 1</label>
+              <input type="text" id="s-college-name-l1" placeholder="e.g. DON BOSCO" value="DON BOSCO" oninput="syncCollegeFullName()"/>
+            </div>
+            <div class="form-group">
+              <label>College Name — Line 2</label>
+              <input type="text" id="s-college-name-l2" placeholder="e.g. POLYTECHNIC COLLEGE" value="POLYTECHNIC COLLEGE" oninput="syncCollegeFullName()"/>
+            </div>
+          </div>
+
           <div class="form-group">
+            <label>College Place / Location</label>
+            <input type="text" id="s-college-place" value="THIRUKAZHUKUNDRAM"/>
+          </div>
+
+          <!-- College Name Typography Options -->
+          <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--glass-border);">
+            <h4 style="margin:0 0 0.6rem 0; font-size:0.9rem; color:#ffd700; display:flex; align-items:center; gap:0.4rem;">
+              <span>🎨</span> College Name Typography &amp; Font Styling
+            </h4>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>College Name Font Color</label>
+                <div class="flex gap-2 align-items-center">
+                  <input type="color" id="s-college-color" value="#1a1a1a" style="width:38px; height:32px; padding:0; border:none; border-radius:6px; cursor:pointer; background:none;" oninput="syncColorHex('s-college-color', this.value)">
+                  <input type="text" id="s-college-color-hex" value="#1a1a1a" style="width:85px; padding:0.4rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.85rem;" oninput="syncColorPicker('s-college-color', this.value)">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('s-college-color', '#1a1a1a')">Dark</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('s-college-color', '#8c6b2d')">Gold</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('s-college-color', '#0f2b5c')">Navy</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('s-college-color', '#800000')">Maroon</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Font Size Scale</label>
+                <select id="s-college-size">
+                  <option value="normal">Standard (1.35rem - Recommended)</option>
+                  <option value="compact">Compact (1.15rem)</option>
+                  <option value="large">Large (1.55rem)</option>
+                  <option value="xlarge">Extra Large (1.80rem)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Font Weight (Bold)</label>
+                <select id="s-college-bold">
+                  <option value="900">Black 900 (Extra Bold - Default)</option>
+                  <option value="700">Bold 700</option>
+                  <option value="600">Semi-Bold 600</option>
+                  <option value="400">Regular 400</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Italic Option (<i>I</i>)</label>
+                <select id="s-college-italic">
+                  <option value="normal">Straight Normal Roman</option>
+                  <option value="italic">Italic</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Underline Option (<u>U</u>)</label>
+                <select id="s-college-underline">
+                  <option value="none">No Underline (Clean)</option>
+                  <option value="underline">Underline College Name</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Letter Spacing</label>
+                <select id="s-college-spacing">
+                  <option value="1.5px">Standard (1.5px)</option>
+                  <option value="3px">Wide (3px)</option>
+                  <option value="5px">Extra Wide (5px)</option>
+                  <option value="0.5px">Compact (0.5px)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mt-2">
             <label>Event Title</label>
             <input type="text" id="s-event-title"/>
           </div>
@@ -706,7 +795,6 @@
             <button class="btn btn-secondary btn-sm" onclick="updateAnnualLivePreview()">🔄 Refresh Preview</button>
           </div>
         </div>
-        </div>
         <p class="text-muted mb-2" style="font-size:0.82rem;">
           This live preview reflects your chosen background image, program title, prestige wording, and house name setting in real-time.
         </p>
@@ -714,7 +802,6 @@
           <div id="annual-live-preview-content" style="max-width: 650px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
             <div style="text-align:center; padding: 2rem; color: #888;">Generating live certificate preview...</div>
           </div>
-        </div>
         </div>
       </div>
 
@@ -731,6 +818,7 @@
           <span id="annual-cert-csv-status" class="text-muted" style="font-size:0.85rem">No file chosen</span>
           <button class="btn btn-primary btn-sm hidden" id="annual-cert-csv-load-btn" onclick="loadAnnualCertCSV()">Load CSV Awardees</button>
           <button class="btn btn-secondary btn-sm" onclick="downloadSampleAnnualCSV()">📥 Download Sample CSV</button>
+          <button class="btn btn-primary btn-sm" onclick="openStudentPhotoModal()">📸 Upload / Live Take Student Photo</button>
         </div>
       </div>
 
@@ -740,10 +828,11 @@
           <h3 style="margin:0">Annual Day Awardees List <span id="annual-cert-list-mode-badge" class="badge badge-gold hidden" style="vertical-align: middle;">CSV Mode</span></h3>
           <button id="annual-cert-reset-btn" class="btn btn-secondary btn-sm hidden" onclick="resetAnnualCertListSource()">Reset List</button>
         </div>
-        <div class="table-wrap" style="max-height:300px;overflow-y:auto">
+        <div class="table-wrap" style="max-height:350px;overflow-y:auto">
           <table>
             <thead>
               <tr>
+                <th style="width:60px">Photo</th>
                 <th>Award / Subject</th>
                 <th>Position / Award Type</th>
                 <th>Awardee Name</th>
@@ -753,7 +842,7 @@
               </tr>
             </thead>
             <tbody id="annual-cert-list-body">
-              <tr><td colspan="6" class="text-muted text-center">No awardees loaded yet. Upload a CSV file or load students.</td></tr>
+              <tr><td colspan="7" class="text-muted text-center">No awardees loaded yet. Upload a CSV file or load students.</td></tr>
             </tbody>
           </table>
         </div>
@@ -766,8 +855,8 @@
 </div>
 
 <!-- Modals -->
-<div id="modal-overlay" class="hidden" style="position:fixed;inset:0;background:hsla(220,15%,5%,.8);z-index:500;display:flex;align-items:center;justify-content:center" onclick="closeModal(event)">
-  <div id="modal-box" class="card" style="min-width:340px;max-width:520px;width:100%;position:relative">
+<div id="modal-overlay" class="hidden" style="position:fixed;inset:0;background:hsla(220,15%,5%,.8);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;" onclick="closeModal(event)">
+  <div id="modal-box" class="card" style="min-width:340px;max-width:540px;width:100%;max-height:90vh;overflow-y:auto;position:relative">
     <button onclick="closeModal()" style="position:absolute;top:.75rem;right:1rem;background:none;border:none;color:var(--text-muted);font-size:1.4rem;cursor:pointer">✕</button>
     <div id="modal-content"></div>
   </div>
@@ -1476,9 +1565,79 @@ function printResults() {
 }
 
 // ── Branding / Settings ───────────────────────────────────────────────────────
+function toggleCollegeNameLayoutFields() {
+  const layout = document.getElementById('s-college-name-layout')?.value || 'single';
+  const singleGroup = document.getElementById('group-college-name-single');
+  const doubleGroup = document.getElementById('group-college-name-double');
+  if (layout === 'double') {
+    if (singleGroup) singleGroup.classList.add('hidden');
+    if (doubleGroup) doubleGroup.classList.remove('hidden');
+    syncCollegeFullName();
+  } else {
+    if (singleGroup) singleGroup.classList.remove('hidden');
+    if (doubleGroup) doubleGroup.classList.add('hidden');
+  }
+}
+
+function syncCollegeFullName() {
+  const l1 = (document.getElementById('s-college-name-l1')?.value || '').trim();
+  const l2 = (document.getElementById('s-college-name-l2')?.value || '').trim();
+  const combined = (l1 + ' ' + l2).trim();
+  if (combined) {
+    const mainInput = document.getElementById('s-college-name');
+    if (mainInput) mainInput.value = combined;
+  }
+}
+
+function syncCollegeNameFields() {
+  const full = (document.getElementById('s-college-name')?.value || '').trim();
+  if (full.includes(' ')) {
+    const words = full.split(' ');
+    const half = Math.ceil(words.length / 2);
+    const l1 = document.getElementById('s-college-name-l1');
+    const l2 = document.getElementById('s-college-name-l2');
+    if (l1) l1.value = words.slice(0, half).join(' ');
+    if (l2) l2.value = words.slice(half).join(' ');
+  }
+}
+
 async function loadSettings() {
   const s = await getSettings();
-  document.getElementById('s-college-name').value = s.CollegeName || '';
+  document.getElementById('s-college-name').value = s.CollegeName || 'DON BOSCO POLYTECHNIC COLLEGE';
+  if (s.CollegeNameLayout && document.getElementById('s-college-name-layout')) {
+    document.getElementById('s-college-name-layout').value = s.CollegeNameLayout;
+  }
+  if (document.getElementById('s-college-name-l1')) {
+    document.getElementById('s-college-name-l1').value = s.CollegeNameLine1 || 'DON BOSCO';
+  }
+  if (document.getElementById('s-college-name-l2')) {
+    document.getElementById('s-college-name-l2').value = s.CollegeNameLine2 || 'POLYTECHNIC COLLEGE';
+  }
+  if (document.getElementById('s-college-place')) {
+    document.getElementById('s-college-place').value = s.CollegePlace || 'THIRUKAZHUKUNDRAM';
+  }
+  if (s.CollegeNameColor && document.getElementById('s-college-color')) {
+    document.getElementById('s-college-color').value = s.CollegeNameColor;
+    const hex = document.getElementById('s-college-color-hex');
+    if (hex) hex.value = s.CollegeNameColor;
+  }
+  if (s.CollegeNameSize && document.getElementById('s-college-size')) {
+    document.getElementById('s-college-size').value = s.CollegeNameSize;
+  }
+  if (s.CollegeNameBold && document.getElementById('s-college-bold')) {
+    document.getElementById('s-college-bold').value = s.CollegeNameBold;
+  }
+  if (s.CollegeNameItalic && document.getElementById('s-college-italic')) {
+    document.getElementById('s-college-italic').value = s.CollegeNameItalic;
+  }
+  if (s.CollegeNameUnderline && document.getElementById('s-college-underline')) {
+    document.getElementById('s-college-underline').value = s.CollegeNameUnderline;
+  }
+  if (s.CollegeNameSpacing && document.getElementById('s-college-spacing')) {
+    document.getElementById('s-college-spacing').value = s.CollegeNameSpacing;
+  }
+  toggleCollegeNameLayoutFields();
+
   document.getElementById('s-event-title').value   = s.EventTitle  || '';
   document.getElementById('s-principal').value     = s.PrincipalName || '';
   document.getElementById('s-incharge').value      = s.CommitteeInChargeName || '';
@@ -1676,13 +1835,26 @@ async function uploadHouseLogo() {
 async function saveSettings() {
   const fields = { 
     CollegeName: 's-college-name', 
+    CollegeNameLayout: 's-college-name-layout',
+    CollegeNameLine1: 's-college-name-l1',
+    CollegeNameLine2: 's-college-name-l2',
+    CollegePlace: 's-college-place',
+    CollegeNameColor: 's-college-color',
+    CollegeNameSize: 's-college-size',
+    CollegeNameBold: 's-college-bold',
+    CollegeNameItalic: 's-college-italic',
+    CollegeNameUnderline: 's-college-underline',
+    CollegeNameSpacing: 's-college-spacing',
     EventTitle: 's-event-title', 
     PrincipalName: 's-principal', 
     CommitteeInChargeName: 's-incharge',
     SecretaryName: 's-secretary'
   };
   for (const [key, elId] of Object.entries(fields)) {
-    await apiPost('saveSetting', { Key: key, Value: document.getElementById(elId).value });
+    const el = document.getElementById(elId);
+    if (el) {
+      await apiPost('saveSetting', { Key: key, Value: el.value });
+    }
   }
   _settings = null; // bust cache
   
@@ -1691,6 +1863,7 @@ async function saveSettings() {
   if (certInput) certInput.value = document.getElementById('s-event-title').value;
 
   toast('Settings saved', 'success');
+  if (typeof updateAnnualLivePreview === 'function') updateAnnualLivePreview();
 }
 
 function applyWordingPreset(val) {
@@ -2104,6 +2277,47 @@ function renderCertificatesList(list) {
   body.innerHTML = rows;
 }
 
+function formatCollegeNameHTML(s) {
+  const layout = s.CollegeNameLayout || 'single';
+  const nameL1 = (s.CollegeNameLine1 || '').trim();
+  const nameL2 = (s.CollegeNameLine2 || '').trim();
+  const fullName = (s.CollegeName || 'DON BOSCO POLYTECHNIC COLLEGE').trim();
+
+  // Typography options
+  const color = s.CollegeNameColor || '#1a1a1a';
+  const size = s.CollegeNameSize || 'normal';
+  const bold = s.CollegeNameBold || '900';
+  const italic = s.CollegeNameItalic || 'normal';
+  const underline = s.CollegeNameUnderline || 'none';
+  const spacing = s.CollegeNameSpacing || '1.5px';
+
+  let fontSizeCss = '1.35rem';
+  if (size === 'compact') fontSizeCss = '1.15rem';
+  else if (size === 'large') fontSizeCss = '1.55rem';
+  else if (size === 'xlarge') fontSizeCss = '1.80rem';
+
+  let styleStr = `color: ${color} !important; font-size: ${fontSizeCss} !important; font-weight: ${bold} !important; font-style: ${italic} !important; text-decoration: ${underline} !important; letter-spacing: ${spacing} !important; line-height: 1.18 !important; text-align: center !important; margin: 0 !important;`;
+
+  let innerContent = '';
+  if (layout === 'double' && (nameL1 || nameL2)) {
+    innerContent = `<span>${nameL1 || 'DON BOSCO'}</span><span style="display:block; margin-top:2px;">${nameL2 || 'POLYTECHNIC COLLEGE'}</span>`;
+  } else if (layout === 'double' && fullName.includes(' ')) {
+    const words = fullName.split(' ');
+    const half = Math.ceil(words.length / 2);
+    const line1 = words.slice(0, half).join(' ');
+    const line2 = words.slice(half).join(' ');
+    innerContent = `<span>${line1}</span><span style="display:block; margin-top:2px;">${line2}</span>`;
+  } else {
+    innerContent = fullName;
+  }
+
+  const place = (s.CollegePlace || 'THIRUKAZHUKUNDRAM').trim();
+  return `
+    <h2 class="cert-college-name-header" style="${styleStr}">${innerContent}</h2>
+    ${place ? `<div class="cert-college-place" style="letter-spacing:1px; margin-top:3px; font-weight:700;">${place}</div>` : ''}
+  `;
+}
+
 async function renderCertificateHTML(r, s) {
   const houseKey = 'logo_' + String(r.House || '').trim().toUpperCase();
   const houseLogoUrl = s[houseKey] || '';
@@ -2194,13 +2408,11 @@ async function renderCertificateHTML(r, s) {
             ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
           </div>
           <div class="cert-header-title">
-            <h2>${s.CollegeName || 'COLLEGE NAME'}</h2>
-            <div class="cert-college-place">THIRUKAZHUKUNDRAM</div>
+            ${formatCollegeNameHTML(s)}
           </div>
           <div class="cert-header-side">
             ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
           </div>
-        </div>
         </div>
 
         <!-- Event Title Block -->
@@ -2214,7 +2426,6 @@ async function renderCertificateHTML(r, s) {
           <div class="cert-photo-frame" style="border-color: ${houseColor} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
             ${centerContent}
           </div>
-        </div>
         </div>
 
         <!-- Gold Hexagon Name Banner -->
@@ -2276,11 +2487,15 @@ async function printSingleCertificate(winner) {
   printArea.innerHTML = await renderCertificateHTML(winner, s);
   
   await waitForImages(printArea);
-  setTimeout(() => {
-    window.print();
+  const cleanup = () => {
     document.body.classList.remove('printing-certificates');
     printArea.innerHTML = '';
-  }, 150);
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(() => {
+    window.print();
+  }, 250);
 }
 
 async function printAllCertificates() {
@@ -2309,11 +2524,15 @@ async function printAllCertificates() {
   printArea.innerHTML = html;
   
   await waitForImages(printArea);
-  setTimeout(() => {
-    window.print();
+  const cleanup = () => {
     document.body.classList.remove('printing-certificates');
     printArea.innerHTML = '';
-  }, 250);
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(() => {
+    window.print();
+  }, 300);
 }
 
 // ── Annual Day Certificates Studio ──────────────────────────────────────────────
@@ -2381,22 +2600,341 @@ function renderAnnualCertificatesList(list) {
   const body = document.getElementById('annual-cert-list-body');
   if (!body) return;
   if (!list || !list.length) {
-    body.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No awardees match the current filters</td></tr>';
+    body.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No awardees match the current filters</td></tr>';
     return;
   }
   body.innerHTML = list.map((r, i) => {
     const winJson = JSON.stringify(r).replace(/"/g, '&quot;');
+    const globalIdx = annualResultsData.indexOf(r);
+    const photoIdx = globalIdx >= 0 ? globalIdx : i;
+    const photoThumb = r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl, 100) : '';
+
     return `<tr>
+      <td style="text-align:center;">
+        ${r.PhotoUrl ? `
+          <div style="display:inline-flex; align-items:center; gap:0.35rem;">
+            <img src="${photoThumb}" alt="Photo" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid #c9a054; background:#fff; cursor:pointer;" onclick="openStudentPhotoModal(${photoIdx})" title="Click to view or change photo">
+            <button type="button" class="btn btn-secondary btn-sm" style="padding:0.15rem 0.35rem; font-size:0.7rem;" onclick="openStudentPhotoModal(${photoIdx})" title="Change photo">📷</button>
+          </div>
+        ` : `
+          <button type="button" class="btn btn-primary btn-sm" style="padding:0.25rem 0.55rem; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.25rem;" onclick="openStudentPhotoModal(${photoIdx})" title="Upload or live take student photo">
+            <span>📸</span> Add
+          </button>
+        `}
+      </td>
       <td>${r.EventName}</td>
       <td><span class="badge badge-gold">${r.Position}</span></td>
       <td><strong>${r.StudentName}</strong></td>
       <td>${r.Department || '-'}</td>
       <td>${r.House ? `<span class="badge" style="background:rgba(201,160,84,0.15);color:#c9a054">${r.House}</span>` : '<span class="text-muted">-</span>'}</td>
       <td>
-        <button class="btn btn-secondary btn-sm" onclick="printSingleAnnualCertificate(${winJson})">🖨️ Print</button>
+        <div style="display:flex; gap:0.35rem; align-items:center;">
+          <button class="btn btn-secondary btn-sm" onclick="printSingleAnnualCertificate(${winJson})">🖨️ Print</button>
+          <button class="btn btn-secondary btn-sm" onclick="openStudentPhotoModal(${photoIdx})" title="Upload or take photo">📸</button>
+        </div>
       </td>
     </tr>`;
   }).join('');
+}
+
+// ── Student Photo Studio (Upload & Live Camera Capture) ────────────────────────
+let _currentPhotoStudentIdx = -1;
+let _cameraStream = null;
+let _capturedPhotoDataUrl = '';
+
+function openStudentPhotoModal(idx) {
+  _currentPhotoStudentIdx = (typeof idx === 'number' && idx >= 0) ? idx : 0;
+  const list = annualResultsData || [];
+  if (!list.length) {
+    toast('No awardees loaded yet. Please upload a CSV file or add awardees first.', 'error');
+    return;
+  }
+  
+  _capturedPhotoDataUrl = '';
+  renderStudentPhotoModalContent();
+  
+  const overlay = document.getElementById('modal-overlay');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    overlay.style.display = 'flex';
+  }
+}
+
+function renderStudentPhotoModalContent() {
+  const list = annualResultsData || [];
+  const currentStudent = list[_currentPhotoStudentIdx] || list[0] || {};
+  const currentPhoto = currentStudent.PhotoUrl ? getGoogleDriveThumbUrl(currentStudent.PhotoUrl, 300) : '';
+
+  const modalBox = document.getElementById('modal-content');
+  if (!modalBox) return;
+
+  const optionsHtml = list.map((s, i) => {
+    const sel = (i === _currentPhotoStudentIdx) ? 'selected' : '';
+    return `<option value="${i}" ${sel}>${s.StudentName} (${s.Department || 'Dept'} &bull; ${s.EventName || 'Award'})</option>`;
+  }).join('');
+
+  modalBox.innerHTML = `
+    <h3 style="margin:0 0 0.8rem 0; display:flex; align-items:center; gap:0.5rem; color:#ffd700;">
+      <span>📸</span> Student Photo Studio
+    </h3>
+    <p class="text-muted mb-2" style="font-size:0.83rem;">
+      Upload a photo file or snap a live camera picture for the awardee. It will be saved to Google Drive and immediately displayed on their certificate.
+    </p>
+
+    <!-- Student Selector Dropdown -->
+    <div class="form-group mb-2">
+      <label style="font-size:0.82rem; font-weight:600;">Selected Awardee</label>
+      <select id="modal-student-select" style="width:100%; font-size:0.88rem;" onchange="changeModalStudent(this.value)">
+        ${optionsHtml}
+      </select>
+    </div>
+
+    <!-- Active Student Info Pill -->
+    <div style="background:rgba(201,160,84,0.1); border:1px solid rgba(201,160,84,0.3); border-radius:8px; padding:0.6rem 0.8rem; margin-bottom:1rem; font-size:0.82rem;">
+      <div style="font-weight:700; color:#ffd700; font-size:0.95rem;" id="modal-student-name-display">${currentStudent.StudentName}</div>
+      <div style="color:var(--text-muted); margin-top:2px;">
+        <span id="modal-student-dept-display">${currentStudent.Department || 'General Department'}</span> &bull; 
+        <span id="modal-student-event-display" style="color:#c9a054">${currentStudent.EventName}</span>
+      </div>
+    </div>
+
+    <!-- Mode Tabs: File Upload vs Live Camera -->
+    <div style="display:flex; gap:0.5rem; margin-bottom:1rem; border-bottom:1px solid var(--glass-border); padding-bottom:0.6rem;">
+      <button type="button" class="btn btn-sm btn-primary" id="tab-btn-upload" onclick="switchPhotoTab('upload')">📁 Upload Photo File</button>
+      <button type="button" class="btn btn-sm btn-secondary" id="tab-btn-camera" onclick="switchPhotoTab('camera')">📷 Live Camera Capture</button>
+    </div>
+
+    <!-- Tab 1: File Upload -->
+    <div id="photo-tab-upload">
+      <div class="form-group">
+        <label>Choose Photo File from Device</label>
+        <input type="file" id="modal-file-input" accept="image/*" onchange="handleModalFileSelect(this)" style="width:100%; font-size:0.85rem;">
+      </div>
+    </div>
+
+    <!-- Tab 2: Live Camera -->
+    <div id="photo-tab-camera" style="display:none;">
+      <div class="camera-stream-box mb-2" id="camera-stream-container">
+        <video id="student-camera-video" autoplay playsinline></video>
+        <div class="camera-guide-circle"></div>
+      </div>
+      <canvas id="student-camera-canvas" style="display:none;"></canvas>
+      <div class="flex gap-2 justify-center mb-2" style="flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary btn-sm" id="btn-start-camera" onclick="startStudentCamera()">▶️ Start Camera</button>
+        <button type="button" class="btn btn-gold btn-sm" id="btn-snap-camera" onclick="snapStudentCamera()" style="display:none; background:#c9a054; color:#000; font-weight:700;">📸 Snap Photo</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-retake-camera" onclick="retakeStudentCamera()" style="display:none;">🔄 Retake</button>
+        <button type="button" class="btn btn-danger btn-sm" id="btn-stop-camera" onclick="stopStudentCamera()" style="display:none;">⏹️ Stop Camera</button>
+      </div>
+    </div>
+
+    <!-- Preview Box (Shows how it will look on certificate circle) -->
+    <div style="text-align:center; margin-top:0.8rem; margin-bottom:1rem;">
+      <div style="font-size:0.75rem; color:#aaa; margin-bottom:0.4rem;">Certificate Photo Frame Preview:</div>
+      <div class="photo-modal-preview-box">
+        <img id="modal-preview-img" src="${currentPhoto || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23888\'%3E%3Cpath d=\'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z\'/%3E%3C/svg%3E'}" alt="Preview">
+      </div>
+      <div id="modal-photo-status" style="font-size:0.78rem; color:#c9a054;">
+        ${currentPhoto ? 'Current photo loaded for this awardee' : 'No photo yet. Upload a file or capture one with your camera.'}
+      </div>
+    </div>
+
+    <!-- Save & Cancel Buttons -->
+    <div class="flex gap-2 justify-end" style="border-top:1px solid var(--glass-border); padding-top:0.8rem;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" id="btn-save-student-photo" onclick="saveStudentModalPhoto()">☁️ Save to Drive &amp; Link Certificate</button>
+    </div>
+  `;
+}
+
+async function startStudentCamera() {
+  const video = document.getElementById('student-camera-video');
+  if (!video) return;
+  try {
+    stopStudentCamera();
+    _cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+      audio: false
+    });
+    video.srcObject = _cameraStream;
+    const startBtn = document.getElementById('btn-start-camera');
+    const snapBtn = document.getElementById('btn-snap-camera');
+    const stopBtn = document.getElementById('btn-stop-camera');
+    const retakeBtn = document.getElementById('btn-retake-camera');
+    if (startBtn) startBtn.style.display = 'none';
+    if (snapBtn) snapBtn.style.display = 'inline-flex';
+    if (stopBtn) stopBtn.style.display = 'inline-flex';
+    if (retakeBtn) retakeBtn.style.display = 'none';
+    const status = document.getElementById('modal-photo-status');
+    if (status) status.textContent = 'Camera active. Frame face in circle and snap photo.';
+  } catch(err) {
+    console.error('Camera error:', err);
+    toast('Camera access error: ' + (err.message || 'Permission denied'), 'error');
+  }
+}
+
+function stopStudentCamera() {
+  if (_cameraStream) {
+    _cameraStream.getTracks().forEach(track => track.stop());
+    _cameraStream = null;
+  }
+  const video = document.getElementById('student-camera-video');
+  if (video) video.srcObject = null;
+  const startBtn = document.getElementById('btn-start-camera');
+  if (startBtn) startBtn.style.display = 'inline-flex';
+  const snapBtn = document.getElementById('btn-snap-camera');
+  if (snapBtn) snapBtn.style.display = 'none';
+  const stopBtn = document.getElementById('btn-stop-camera');
+  if (stopBtn) stopBtn.style.display = 'none';
+}
+
+function snapStudentCamera() {
+  const video = document.getElementById('student-camera-video');
+  const canvas = document.getElementById('student-camera-canvas');
+  if (!video || !canvas) return;
+  
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 640;
+  const ctx = canvas.getContext('2d');
+  
+  // Mirror horizontally so image matches the mirrored video preview
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  _capturedPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  
+  // Update preview
+  const prev = document.getElementById('modal-preview-img');
+  if (prev) prev.src = _capturedPhotoDataUrl;
+  
+  stopStudentCamera();
+  const retakeBtn = document.getElementById('btn-retake-camera');
+  if (retakeBtn) retakeBtn.style.display = 'inline-flex';
+  const status = document.getElementById('modal-photo-status');
+  if (status) status.textContent = '✅ Photo snapped! Click "Save to Drive & Link" below.';
+  toast('Photo captured! Ready to save.', 'info');
+}
+
+function retakeStudentCamera() {
+  _capturedPhotoDataUrl = '';
+  startStudentCamera();
+}
+
+function handleModalFileSelect(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _capturedPhotoDataUrl = e.target.result;
+    const prev = document.getElementById('modal-preview-img');
+    if (prev) prev.src = _capturedPhotoDataUrl;
+    const status = document.getElementById('modal-photo-status');
+    if (status) status.textContent = '✅ Image loaded from file! Click "Save to Drive & Link" below.';
+  };
+  reader.readAsDataURL(file);
+}
+
+function switchPhotoTab(tab) {
+  const uploadTab = document.getElementById('photo-tab-upload');
+  const cameraTab = document.getElementById('photo-tab-camera');
+  const uploadBtn = document.getElementById('tab-btn-upload');
+  const cameraBtn = document.getElementById('tab-btn-camera');
+
+  if (tab === 'upload') {
+    stopStudentCamera();
+    if (uploadTab) uploadTab.style.display = 'block';
+    if (cameraTab) cameraTab.style.display = 'none';
+    if (uploadBtn) uploadBtn.className = 'btn btn-sm btn-primary';
+    if (cameraBtn) cameraBtn.className = 'btn btn-sm btn-secondary';
+  } else {
+    if (uploadTab) uploadTab.style.display = 'none';
+    if (cameraTab) cameraTab.style.display = 'block';
+    if (uploadBtn) uploadBtn.className = 'btn btn-sm btn-secondary';
+    if (cameraBtn) cameraBtn.className = 'btn btn-sm btn-primary';
+    startStudentCamera();
+  }
+}
+
+function changeModalStudent(newIdx) {
+  stopStudentCamera();
+  _currentPhotoStudentIdx = parseInt(newIdx, 10);
+  _capturedPhotoDataUrl = '';
+  renderStudentPhotoModalContent();
+}
+
+async function saveStudentModalPhoto() {
+  const list = annualResultsData || [];
+  const s = list[_currentPhotoStudentIdx];
+  if (!s) {
+    toast('No student selected', 'error');
+    return;
+  }
+  if (!_capturedPhotoDataUrl) {
+    toast('Please choose a file or take a photo first.', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-student-photo');
+  if (btn) btn.disabled = true;
+
+  try {
+    toast(`Saving photo for ${s.StudentName} to Google Drive…`, 'info');
+    
+    // Parse base64
+    const parts = _capturedPhotoDataUrl.split(',');
+    const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
+    const cleanStudentName = (s.StudentName || 'student').trim();
+    const payload = {
+      base64: parts[1],
+      mimeType: mime,
+      filename: `${cleanStudentName.replace(/[^a-zA-Z0-9_-]/g, '_')}_photo.jpg`,
+      studentName: cleanStudentName,
+      house: s.House || '',
+      dept: s.Department || ''
+    };
+
+    let driveUrl = '';
+    try {
+      const res = await apiUpload('uploadPhoto', payload);
+      if (res && res.url) {
+        driveUrl = res.url;
+      }
+    } catch(uploadErr) {
+      console.warn('Backend Drive upload failed or running in standalone mode:', uploadErr);
+    }
+
+    // Set the photo URL (Drive URL or fallback to base64 dataUrl)
+    const finalPhotoUrl = driveUrl || _capturedPhotoDataUrl;
+    s.PhotoUrl = finalPhotoUrl;
+
+    // Also persist to Results sheet if EventID exists
+    if (s.EventID && driveUrl) {
+      try {
+        await apiPost('saveResultPhoto', { eventId: s.EventID, studentName: cleanStudentName, photoUrl: driveUrl });
+      } catch(e) {}
+    }
+
+    // Also update matching student in studentsData
+    const match = studentsData.find(st => st.Name && st.Name.trim().toLowerCase() === cleanStudentName.toLowerCase());
+    if (match) match.PhotoUrl = finalPhotoUrl;
+
+    toast(`✅ Photo successfully updated for ${s.StudentName}!`, 'success');
+    
+    // Stop camera and close modal
+    stopStudentCamera();
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('modal-overlay').classList.add('hidden');
+
+    // Refresh Awardees List Table
+    filterAnnualCertificates();
+
+    // Refresh Live Preview if this student is being previewed
+    updateAnnualLivePreview();
+  } catch(err) {
+    toast('Failed to save photo: ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 let annualCsvFile = null;
@@ -2907,8 +3445,7 @@ async function renderAnnualCertificateHTML(r, s) {
             ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
           </div>
           <div class="cert-header-title">
-            <h2>${s.CollegeName || 'DON BOSCO COLLEGE OF ARTS AND SCIENCE'}</h2>
-            <div class="cert-college-place">THIRUKAZHUKUNDRAM</div>
+            ${formatCollegeNameHTML(s)}
           </div>
           <div class="cert-header-side">
             ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
@@ -2966,11 +3503,15 @@ async function printSingleAnnualCertificate(winner) {
   printArea.innerHTML = await renderAnnualCertificateHTML(winner, s);
   
   await waitForImages(printArea);
-  setTimeout(() => {
-    window.print();
+  const cleanup = () => {
     document.body.classList.remove('printing-certificates');
     printArea.innerHTML = '';
-  }, 150);
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(() => {
+    window.print();
+  }, 250);
 }
 
 async function printAllAnnualCertificates() {
@@ -2999,16 +3540,21 @@ async function printAllAnnualCertificates() {
   printArea.innerHTML = html;
   
   await waitForImages(printArea);
-  setTimeout(() => {
-    window.print();
+  const cleanup = () => {
     document.body.classList.remove('printing-certificates');
     printArea.innerHTML = '';
-  }, 250);
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(() => {
+    window.print();
+  }, 300);
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 function closeModal(e) {
   if (e && e.target !== document.getElementById('modal-overlay')) return;
+  if (typeof stopStudentCamera === 'function') stopStudentCamera();
   document.getElementById('modal-overlay').style.display='none';
   document.getElementById('modal-overlay').classList.add('hidden');
 }
