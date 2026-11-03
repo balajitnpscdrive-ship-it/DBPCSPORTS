@@ -633,39 +633,63 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 
 .cert-card.has-custom-bg {
   background: #ffffff !important;
-  background-size: 100% 100% !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
+  background-image: none !important;
 }
 
-.cert-card > :not(.cert-custom-bg-wrap) {
+/* Explicit content layers sit in front of background */
+.cert-card .cert-header,
+.cert-card .cert-event-block,
+.cert-card .cert-middle-section,
+.cert-card .cert-name-banner,
+.cert-card .cert-body,
+.cert-card .cert-prestigious-wording,
+.cert-card .cert-footer {
   position: relative;
   z-index: 2;
 }
 
 .cert-card .cert-watermark {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 70% !important;
+  height: 50% !important;
+  opacity: 0.04 !important;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  pointer-events: none !important;
   z-index: 1 !important;
 }
 
 .cert-card .cert-corner {
+  position: absolute !important;
   z-index: 3 !important;
 }
 
 .cert-custom-bg-wrap {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .cert-custom-bg-wrap img {
+  position: absolute !important;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
   object-fit: fill !important;
   display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -680,21 +704,6 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 
 .cert-card.custom-bg-no-corners .cert-corner {
   display: none !important;
-}
-
-.cert-watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 50%;
-  opacity: 0.04;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  pointer-events: none;
-  z-index: 1;
 }
 
 .cert-header {
@@ -864,6 +873,62 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   z-index: 2;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
+}
+
+/* Student Name Highlight Variants */
+.cert-name-banner.highlight-box {
+  background: rgba(201, 160, 84, 0.14) !important;
+  border: 1.5px solid #c9a054 !important;
+  border-radius: 8px !important;
+  clip-path: none !important;
+  box-shadow: none !important;
+  padding: 0.45rem 1.8rem !important;
+}
+
+.cert-name-banner.highlight-ribbon {
+  background: linear-gradient(90deg, transparent 0%, rgba(201, 160, 84, 0.22) 20%, rgba(201, 160, 84, 0.22) 80%, transparent 100%) !important;
+  border-top: 1.5px solid rgba(201, 160, 84, 0.6) !important;
+  border-bottom: 1.5px solid rgba(201, 160, 84, 0.6) !important;
+  clip-path: none !important;
+  box-shadow: none !important;
+  padding: 0.45rem 1.5rem !important;
+}
+
+.cert-name-banner.highlight-double-line {
+  background: transparent !important;
+  border-top: 2px solid #c9a054 !important;
+  border-bottom: 2px solid #c9a054 !important;
+  clip-path: none !important;
+  box-shadow: none !important;
+  padding: 0.35rem 1.5rem !important;
+  width: auto !important;
+  display: inline-block !important;
+}
+
+.cert-name-banner.highlight-glow {
+  background: transparent !important;
+  clip-path: none !important;
+  box-shadow: none !important;
+  text-shadow: 0 0 14px rgba(201, 160, 84, 0.65) !important;
+  padding: 0.35rem 1rem !important;
+}
+
+.cert-name-banner.highlight-clean {
+  background: transparent !important;
+  clip-path: none !important;
+  box-shadow: none !important;
+  padding: 0.35rem 1rem !important;
+}
+
+/* Certificate Font Scaling */
+.cert-card.scale-compact {
+  font-size: 0.92rem;
+}
+.cert-card.scale-large {
+  font-size: 1.08rem;
+}
+.cert-card.scale-xlarge {
+  font-size: 1.18rem;
 }
 
 /* Department line - bold black uppercase */
@@ -1131,26 +1196,102 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     background: radial-gradient(circle at center, #ffffff 0%, #fffdf4 75%, #fffbf0 100%) !important;
     padding: 10mm 10mm 8mm 10mm !important; /* Tight internal cert padding - bigger usable area */
     box-sizing: border-box !important;
+    position: relative !important;
+    overflow: hidden !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   .cert-page-break .cert-card.has-custom-bg {
     background: #ffffff !important;
-    background-size: 100% 100% !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
+    background-image: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .cert-page-break .cert-card > :not(.cert-custom-bg-wrap) {
+  /* Explicit content layers sit in front of background */
+  .cert-page-break .cert-card .cert-header,
+  .cert-page-break .cert-card .cert-event-block,
+  .cert-page-break .cert-card .cert-middle-section,
+  .cert-page-break .cert-card .cert-name-banner,
+  .cert-page-break .cert-card .cert-body,
+  .cert-page-break .cert-card .cert-prestigious-wording,
+  .cert-page-break .cert-card .cert-footer {
     position: relative !important;
     z-index: 2 !important;
   }
 
   .cert-page-break .cert-corner {
+    position: absolute !important;
     z-index: 3 !important;
+  }
+
+  .cert-page-break .cert-watermark {
+    display: block !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 70% !important;
+    height: 50% !important;
+    opacity: 0.05 !important;
+    z-index: 1 !important;
+    pointer-events: none !important;
+    background-size: contain !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cert-page-break .cert-name-banner.highlight-box {
+    background: rgba(201, 160, 84, 0.14) !important;
+    border: 1.5px solid #c9a054 !important;
+    border-radius: 8px !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    padding: 0.45rem 1.8rem !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cert-page-break .cert-name-banner.highlight-ribbon {
+    background: linear-gradient(90deg, transparent 0%, rgba(201, 160, 84, 0.22) 20%, rgba(201, 160, 84, 0.22) 80%, transparent 100%) !important;
+    border-top: 1.5px solid rgba(201, 160, 84, 0.6) !important;
+    border-bottom: 1.5px solid rgba(201, 160, 84, 0.6) !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    padding: 0.45rem 1.5rem !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cert-page-break .cert-name-banner.highlight-double-line {
+    background: transparent !important;
+    border-top: 2px solid #c9a054 !important;
+    border-bottom: 2px solid #c9a054 !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    padding: 0.35rem 1.5rem !important;
+    width: auto !important;
+    display: inline-block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cert-page-break .cert-name-banner.highlight-glow {
+    background: transparent !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    text-shadow: 0 0 14px rgba(201, 160, 84, 0.65) !important;
+    padding: 0.35rem 1rem !important;
+  }
+
+  .cert-page-break .cert-name-banner.highlight-clean {
+    background: transparent !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    padding: 0.35rem 1rem !important;
   }
 
   .cert-page-break .cert-custom-bg-wrap {
@@ -1162,13 +1303,20 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     pointer-events: none !important;
     display: block !important;
     overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .cert-page-break .cert-custom-bg-wrap img {
+    position: absolute !important;
+    inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
     object-fit: fill !important;
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -1183,13 +1331,6 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 
   .cert-page-break .cert-card.custom-bg-no-corners .cert-corner {
     display: none !important;
-  }
-
-  .cert-page-break .cert-watermark {
-    display: block !important;
-    opacity: 0.05 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
   .cert-page-break .cert-header {
