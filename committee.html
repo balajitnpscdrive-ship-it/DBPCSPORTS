@@ -587,6 +587,94 @@
           </div>
         </div>
 
+
+        <!-- Typography & Text Styling Options -->
+        <div style="margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid var(--glass-border);">
+          <h4 style="margin:0 0 0.8rem 0; font-size:0.95rem; color:#ffd700; display:flex; align-items:center; gap:0.5rem;">
+            <span>🎨</span> Typography, Font Colors &amp; Text Styling
+          </h4>
+          <div class="grid-2">
+            <div>
+              <div class="form-group">
+                <label>Primary Text Color (Body &amp; Details)</label>
+                <div class="flex gap-2 align-items-center">
+                  <input type="color" id="annual-cert-text-color" value="#1a1a1a" style="width:40px; height:34px; padding:0; border:none; border-radius:6px; cursor:pointer; background:none;" oninput="syncColorHex('annual-cert-text-color', this.value); refreshAnnualCertPreview()">
+                  <input type="text" id="annual-cert-text-color-hex" value="#1a1a1a" style="width:90px; padding:0.4rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.85rem;" oninput="syncColorPicker('annual-cert-text-color', this.value); refreshAnnualCertPreview()">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('annual-cert-text-color', '#1a1a1a')">Dark</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('annual-cert-text-color', '#0f2b5c')">Navy</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('annual-cert-text-color', '#ffffff')">White</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Student Name Font Color</label>
+                <div class="flex gap-2 align-items-center">
+                  <input type="color" id="annual-cert-name-color" value="#1a1205" style="width:40px; height:34px; padding:0; border:none; border-radius:6px; cursor:pointer; background:none;" oninput="syncColorHex('annual-cert-name-color', this.value); refreshAnnualCertPreview()">
+                  <input type="text" id="annual-cert-name-color-hex" value="#1a1205" style="width:90px; padding:0.4rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.85rem;" oninput="syncColorPicker('annual-cert-name-color', this.value); refreshAnnualCertPreview()">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('annual-cert-name-color', '#8c6b2d')">Gold</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('annual-cert-name-color', '#1e3a8a')">Royal</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetColor('annual-cert-name-color', '#b91c1c')">Ruby</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Overall Certificate Font Scale</label>
+                <select id="annual-cert-font-scale" onchange="refreshAnnualCertPreview()">
+                  <option value="normal">Standard (100% - Recommended)</option>
+                  <option value="compact">Compact (90% - For Longer Ceremony Text)</option>
+                  <option value="large">Large (110% - High Readability)</option>
+                  <option value="xlarge">Extra Large (120% - Grand Presentation)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Student Name Font Size</label>
+                <select id="annual-cert-name-size" onchange="refreshAnnualCertPreview()">
+                  <option value="large" selected>Large &amp; Prominent (1.65rem)</option>
+                  <option value="xlarge">Majestic &amp; Grand (2.05rem)</option>
+                  <option value="normal">Standard (1.35rem)</option>
+                  <option value="compact">Compact (1.15rem)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <div class="form-group">
+                <label>Student Name Highlight Option</label>
+                <select id="annual-cert-highlight" onchange="refreshAnnualCertPreview()">
+                  <option value="hexagon">🏅 Gold Hexagon Ribbon Banner (Classic Royal Default)</option>
+                  <option value="box">📦 Soft Golden Accent Badge / Box</option>
+                  <option value="ribbon">🎗️ Gradient Flourish Ribbon</option>
+                  <option value="double-line">✨ Double Gold Line Flourish</option>
+                  <option value="glow">🌟 Glowing Gold Ambient Aura</option>
+                  <option value="clean">🚫 Clean Text (No Background Box/Ribbon)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Underline Option (<u>U</u>)</label>
+                <select id="annual-cert-underline" onchange="refreshAnnualCertPreview()">
+                  <option value="none">No Underline (Clean)</option>
+                  <option value="name">Underline Student Name</option>
+                  <option value="title">Underline Event / Program Title</option>
+                  <option value="both">Underline Both Student Name &amp; Title</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Bold Option (<b>B</b>)</label>
+                <select id="annual-cert-bold" onchange="refreshAnnualCertPreview()">
+                  <option value="name_title">Bold Student Name &amp; Ceremony Title (Recommended)</option>
+                  <option value="all">Bold Entire Certificate Content (Strong Emphasis)</option>
+                  <option value="normal">Standard Regular Weight (Subtle &amp; Elegant)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Italic Option (<i>I</i>)</label>
+                <select id="annual-cert-italic" onchange="refreshAnnualCertPreview()">
+                  <option value="wording">Italicize Prestigious Wording &amp; Certification Line</option>
+                  <option value="all">Italicize Body Text &amp; Achievement</option>
+                  <option value="none">Straight Non-Italic Roman Text</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group mt-2">
           <label>Prestigious Wording Preset</label>
           <select id="annual-wording-preset" onchange="applyAnnualWordingPreset(this.value)">
@@ -618,6 +706,7 @@
             <button class="btn btn-secondary btn-sm" onclick="updateAnnualLivePreview()">🔄 Refresh Preview</button>
           </div>
         </div>
+        </div>
         <p class="text-muted mb-2" style="font-size:0.82rem;">
           This live preview reflects your chosen background image, program title, prestige wording, and house name setting in real-time.
         </p>
@@ -625,6 +714,7 @@
           <div id="annual-live-preview-content" style="max-width: 650px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
             <div style="text-align:center; padding: 2rem; color: #888;">Generating live certificate preview...</div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -1460,6 +1550,37 @@ async function loadSettings() {
     }
   }
 
+  // Load Typography & Text Styling Settings
+  const annualTextColor = document.getElementById('annual-cert-text-color');
+  if (annualTextColor) {
+    annualTextColor.value = s.AnnualDayTextColor || '#1a1a1a';
+    const hex = document.getElementById('annual-cert-text-color-hex');
+    if (hex) hex.value = s.AnnualDayTextColor || '#1a1a1a';
+  }
+  const annualNameColor = document.getElementById('annual-cert-name-color');
+  if (annualNameColor) {
+    annualNameColor.value = s.AnnualDayNameColor || '#1a1205';
+    const hex = document.getElementById('annual-cert-name-color-hex');
+    if (hex) hex.value = s.AnnualDayNameColor || '#1a1205';
+  }
+  const annualFontScale = document.getElementById('annual-cert-font-scale');
+  if (annualFontScale) annualFontScale.value = s.AnnualDayFontScale || 'normal';
+
+  const annualNameSize = document.getElementById('annual-cert-name-size');
+  if (annualNameSize) annualNameSize.value = s.AnnualDayNameSize || 'large';
+
+  const annualHighlight = document.getElementById('annual-cert-highlight');
+  if (annualHighlight) annualHighlight.value = s.AnnualDayHighlight || 'hexagon';
+
+  const annualUnderline = document.getElementById('annual-cert-underline');
+  if (annualUnderline) annualUnderline.value = s.AnnualDayUnderline || 'none';
+
+  const annualBold = document.getElementById('annual-cert-bold');
+  if (annualBold) annualBold.value = s.AnnualDayBold || 'name_title';
+
+  const annualItalic = document.getElementById('annual-cert-italic');
+  if (annualItalic) annualItalic.value = s.AnnualDayItalic || 'wording';
+
   // Load Annual Day Background preview if present in settings
   if (s.AnnualDayBgUrl && !_localAnnualBgDataUrl) {
     _localAnnualBgDataUrl = s.AnnualDayBgUrl;
@@ -2080,6 +2201,7 @@ async function renderCertificateHTML(r, s) {
             ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
           </div>
         </div>
+        </div>
 
         <!-- Event Title Block -->
         <div class="cert-event-block">
@@ -2092,6 +2214,7 @@ async function renderCertificateHTML(r, s) {
           <div class="cert-photo-frame" style="border-color: ${houseColor} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
             ${centerContent}
           </div>
+        </div>
         </div>
 
         <!-- Gold Hexagon Name Banner -->
@@ -2461,6 +2584,24 @@ function applyAnnualWordingPreset(val) {
   updateAnnualLivePreview();
 }
 
+function syncColorHex(colorId, val) {
+  const hex = document.getElementById(colorId + '-hex');
+  if (hex) hex.value = val;
+}
+
+function syncColorPicker(colorId, val) {
+  const picker = document.getElementById(colorId);
+  if (picker && /^#[0-9A-Fa-f]{6}$/.test(val)) picker.value = val;
+}
+
+function setPresetColor(colorId, val) {
+  const picker = document.getElementById(colorId);
+  if (picker) picker.value = val;
+  const hex = document.getElementById(colorId + '-hex');
+  if (hex) hex.value = val;
+  refreshAnnualCertPreview();
+}
+
 function refreshAnnualCertPreview() {
   updateAnnualLivePreview();
 }
@@ -2515,6 +2656,24 @@ async function saveAnnualDaySettings() {
     await apiPost('saveSetting', { Key: 'AnnualDayCenterDisplay', Value: centerDisplay });
     await apiPost('saveSetting', { Key: 'AnnualDayWatermark', Value: watermark });
     await apiPost('saveSetting', { Key: 'AnnualDayPrestigiousWording', Value: wording });
+
+    const textColor = document.getElementById('annual-cert-text-color')?.value || '#1a1a1a';
+    const nameColor = document.getElementById('annual-cert-name-color')?.value || '#1a1205';
+    const fontScale = document.getElementById('annual-cert-font-scale')?.value || 'normal';
+    const nameSize = document.getElementById('annual-cert-name-size')?.value || 'large';
+    const highlight = document.getElementById('annual-cert-highlight')?.value || 'hexagon';
+    const underline = document.getElementById('annual-cert-underline')?.value || 'none';
+    const bold = document.getElementById('annual-cert-bold')?.value || 'name_title';
+    const italic = document.getElementById('annual-cert-italic')?.value || 'wording';
+
+    await apiPost('saveSetting', { Key: 'AnnualDayTextColor', Value: textColor });
+    await apiPost('saveSetting', { Key: 'AnnualDayNameColor', Value: nameColor });
+    await apiPost('saveSetting', { Key: 'AnnualDayFontScale', Value: fontScale });
+    await apiPost('saveSetting', { Key: 'AnnualDayNameSize', Value: nameSize });
+    await apiPost('saveSetting', { Key: 'AnnualDayHighlight', Value: highlight });
+    await apiPost('saveSetting', { Key: 'AnnualDayUnderline', Value: underline });
+    await apiPost('saveSetting', { Key: 'AnnualDayBold', Value: bold });
+    await apiPost('saveSetting', { Key: 'AnnualDayItalic', Value: italic });
 
     if (_localAnnualBgDataUrl) {
       if (_localAnnualBgDataUrl.startsWith('data:image/')) {
@@ -2584,14 +2743,90 @@ async function renderAnnualCertificateHTML(r, s) {
   const finalBgUrl = (rawBg && !rawBg.startsWith('data:')) ? getGoogleDriveThumbUrl(rawBg, 1600) : rawBg;
   const hasCustomBg = Boolean(finalBgUrl);
 
+  // Typography & Styling options
+  const textColor = document.getElementById('annual-cert-text-color')?.value || s.AnnualDayTextColor || '#1a1a1a';
+  const nameColor = document.getElementById('annual-cert-name-color')?.value || s.AnnualDayNameColor || '#1a1205';
+  const fontScale = document.getElementById('annual-cert-font-scale')?.value || s.AnnualDayFontScale || 'normal';
+  const nameSize = document.getElementById('annual-cert-name-size')?.value || s.AnnualDayNameSize || 'large';
+  const highlightStyle = document.getElementById('annual-cert-highlight')?.value || s.AnnualDayHighlight || 'hexagon';
+  const underlineStyle = document.getElementById('annual-cert-underline')?.value || s.AnnualDayUnderline || 'none';
+  const boldStyle = document.getElementById('annual-cert-bold')?.value || s.AnnualDayBold || 'name_title';
+  const italicStyle = document.getElementById('annual-cert-italic')?.value || s.AnnualDayItalic || 'wording';
+
   let cardClasses = 'cert-card';
-  let cardStyles = '';
+  if (fontScale === 'compact') cardClasses += ' scale-compact';
+  else if (fontScale === 'large') cardClasses += ' scale-large';
+  else if (fontScale === 'xlarge') cardClasses += ' scale-xlarge';
+
+  let cardStyles = ` color: ${textColor} !important;`;
   if (hasCustomBg) {
     cardClasses += ' has-custom-bg';
-    cardStyles += ` background-image: url('${finalBgUrl}') !important; background-color: #ffffff !important;`;
+    cardStyles += ' background-color: #ffffff !important; background-image: none !important;';
   }
   if (hideBorders) {
     cardClasses += ' custom-bg-no-border custom-bg-no-corners';
+  }
+
+  // Program & Award Title styles
+  let eventTitleStyles = '';
+  if (underlineStyle === 'title' || underlineStyle === 'both') {
+    eventTitleStyles += ' text-decoration: underline; text-underline-offset: 4px;';
+  }
+  if (boldStyle === 'all' || boldStyle === 'name_title') {
+    eventTitleStyles += ' font-weight: 800;';
+  } else if (boldStyle === 'normal') {
+    eventTitleStyles += ' font-weight: 600;';
+  }
+
+  // Student Name styles & classes
+  let nameClasses = 'cert-name-banner';
+  if (highlightStyle === 'box') nameClasses += ' highlight-box';
+  else if (highlightStyle === 'ribbon') nameClasses += ' highlight-ribbon';
+  else if (highlightStyle === 'double-line') nameClasses += ' highlight-double-line';
+  else if (highlightStyle === 'glow') nameClasses += ' highlight-glow';
+  else if (highlightStyle === 'clean') nameClasses += ' highlight-clean';
+
+  let nameStyles = `color: ${nameColor} !important;`;
+  if (nameSize === 'compact') nameStyles += ' font-size: 1.15rem !important;';
+  else if (nameSize === 'normal') nameStyles += ' font-size: 1.35rem !important;';
+  else if (nameSize === 'large') nameStyles += ' font-size: 1.65rem !important;';
+  else if (nameSize === 'xlarge') nameStyles += ' font-size: 2.05rem !important;';
+
+  if (boldStyle === 'normal') nameStyles += ' font-weight: 600 !important;';
+  else nameStyles += ' font-weight: 900 !important;';
+
+  if (underlineStyle === 'name' || underlineStyle === 'both') {
+    nameStyles += ` text-decoration: underline !important; text-decoration-color: ${nameColor} !important; text-underline-offset: 6px !important;`;
+  }
+  if (highlightStyle === 'double-line') {
+    nameStyles += ` border-top-color: ${nameColor} !important; border-bottom-color: ${nameColor} !important;`;
+  }
+
+  // Certification and Body Text styles
+  let certifyStyles = '';
+  let bodyStyles = '';
+  if (italicStyle === 'all') {
+    certifyStyles += ' font-style: italic !important;';
+    bodyStyles += ' font-style: italic !important;';
+  } else if (italicStyle === 'wording') {
+    certifyStyles += ' font-style: italic !important;';
+  } else if (italicStyle === 'none') {
+    certifyStyles += ' font-style: normal !important;';
+    bodyStyles += ' font-style: normal !important;';
+  }
+  if (boldStyle === 'all') {
+    bodyStyles += ' font-weight: 700 !important;';
+  }
+
+  // Prestigious Wording styles
+  let wordingStyles = `color: ${textColor} !important;`;
+  if (italicStyle === 'wording' || italicStyle === 'all') {
+    wordingStyles += ' font-style: italic !important;';
+  } else if (italicStyle === 'none') {
+    wordingStyles += ' font-style: normal !important;';
+  }
+  if (boldStyle === 'all') {
+    wordingStyles += ' font-weight: 600 !important;';
   }
 
   // Look up house color if house is used
@@ -2682,7 +2917,7 @@ async function renderAnnualCertificateHTML(r, s) {
 
         <!-- Annual Day Program Title Block -->
         <div class="cert-event-block">
-          <div class="cert-event-title">${progName}</div>
+          <div class="cert-event-title" style="${eventTitleStyles}">${progName}</div>
           <div class="cert-award-text">${awardTitle}</div>
         </div>
         
@@ -2690,18 +2925,18 @@ async function renderAnnualCertificateHTML(r, s) {
         ${centerSectionHtml}
 
         <!-- Student Name Banner -->
-        <div class="cert-name-banner">${r.StudentName}</div>
+        <div class="${nameClasses}" style="${nameStyles}">${r.StudentName}</div>
 
         <!-- Certificate Body -->
-        <div class="cert-body">
-          <div class="cert-certify">This is to certify that the above mentioned student of</div>
-          ${r.Department ? `<div class="cert-dept-line">${r.Department} Department</div>` : ''}
+        <div class="cert-body" style="${bodyStyles}">
+          <div class="cert-certify" style="${certifyStyles}">This is to certify that the above mentioned student of</div>
+          ${r.Department ? `<div class="cert-dept-line" style="${bodyStyles}">${r.Department} Department</div>` : ''}
           ${shouldPrintHouse ? `<div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>` : ''}
           <div class="cert-achievement-line">has secured <strong>${posText}</strong> in <strong>"${r.EventName}"</strong></div>
         </div>
 
         <!-- Prestigious Wording -->
-        <div class="cert-prestigious-wording">
+        <div class="cert-prestigious-wording" style="${wordingStyles}">
           ${prestigiousWording}
         </div>
 
