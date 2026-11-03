@@ -45,7 +45,8 @@
       <div class="nav-item" data-section="photos">            <span class="icon">📸</span> Winner Photos</div>
       <div class="nav-item" data-section="branding">          <span class="icon">🎨</span> Branding</div>
       <div class="nav-item" data-section="reports">           <span class="icon">🖨️</span> Reports</div>
-      <div class="nav-item" data-section="certificates">      <span class="icon">📜</span> Certificates</div>
+      <div class="nav-item" data-section="certificates">      <span class="icon">📜</span> Certificates (Sports)</div>
+      <div class="nav-item" data-section="annual-certificates"><span class="icon">🎓</span> Annual Day Certs</div>
     </nav>
     <div style="margin-top:auto;padding:1rem">
       <button class="btn btn-secondary btn-sm w-full" onclick="logout()">Logout</button>
@@ -482,6 +483,158 @@
       <!-- Certificate Print Area -->
       <div id="cert-print-area" class="cert-preview-container"></div>
     </section>
+
+    <!-- Annual Day Certificates Section -->
+    <section id="sec-annual-certificates" class="section-page hidden">
+      <div class="topbar">
+        <div class="topbar-title">🎓 Annual Day Certificates Generator</div>
+        <div class="flex gap-1 no-print">
+          <select id="annual-cert-filter-dept" onchange="filterAnnualCertificates()"><option value="">All Departments</option></select>
+          <select id="annual-cert-filter-award" onchange="filterAnnualCertificates()"><option value="">All Awards / Events</option></select>
+          <button class="btn btn-primary btn-sm" onclick="printAllAnnualCertificates()">🖨️ Print All (Bulk)</button>
+        </div>
+      </div>
+
+      <!-- Annual Day Certificate Options & Custom Background Card -->
+      <div class="card no-print mb-3">
+        <h3 class="mb-2">🎨 Annual Day Certificate Options &amp; Background</h3>
+        <p class="text-muted mb-2" style="font-size:.85rem">
+          Configure Annual Day options: optional house name printing, custom background image upload, program name, and prestigious award wording.
+        </p>
+        <div class="grid-2">
+          <div>
+            <div class="form-group">
+              <label>Program Name / Event Title</label>
+              <input type="text" id="annual-cert-program-name" value="ANNUAL DAY 2026" style="width:100%; padding:0.6rem 0.8rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.9rem;" oninput="refreshAnnualCertPreview()"/>
+            </div>
+            <div class="form-group">
+              <label>Award Sub-Title</label>
+              <select id="annual-cert-award-title" onchange="refreshAnnualCertPreview()">
+                <option value="Certificate of Merit">Certificate of Merit</option>
+                <option value="Certificate of Academic Excellence">Certificate of Academic Excellence</option>
+                <option value="Certificate of Appreciation">Certificate of Appreciation</option>
+                <option value="Certificate of Achievement">Certificate of Achievement</option>
+                <option value="Special Endowment Award">Special Endowment Award</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Print House Name on Certificate?</label>
+              <select id="annual-cert-print-house" onchange="refreshAnnualCertPreview()">
+                <option value="No">No — Omit House (Standard for Annual Day)</option>
+                <option value="Yes">Yes — Include House Name</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Center Circular Frame Content</label>
+              <select id="annual-cert-center-display" onchange="refreshAnnualCertPreview()">
+                <option value="photo">👤 Student Photo (or silhouette placeholder)</option>
+                <option value="crest">🏅 Golden Annual Day Medallion / Crest</option>
+                <option value="logo">🏠 House Logo / Dynamic Shield</option>
+                <option value="none">🚫 Clean (No Center Frame)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>Upload Certificate Background Image</label>
+              <div class="flex gap-2 align-items-center mb-1" style="flex-wrap: wrap;">
+                <input type="file" id="annual-cert-bg-file" accept="image/*" style="display:none" onchange="handleAnnualBgSelect(this)">
+                <label for="annual-cert-bg-file" class="btn btn-secondary btn-sm" style="margin: 0; cursor: pointer;">🖼️ Choose Background Image</label>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-upload-annual-bg" onclick="uploadAnnualBgToDrive()">☁️ Save to Drive</button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeAnnualBg()">🗑️ Clear</button>
+              </div>
+              <div id="annual-bg-preview-container" style="display:none; margin-top:0.5rem;">
+                <div style="font-size:0.75rem; color:#aaa; margin-bottom:0.2rem;">Loaded Background Preview:</div>
+                <img id="annual-bg-preview-img" src="" alt="Background Preview" style="height:70px; border-radius:6px; border:1px solid var(--glass-border); object-fit:contain; background:#fff;"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Certificate Background Style</label>
+              <select id="annual-cert-bg-style" onchange="refreshAnnualCertPreview()">
+                <option value="custom">Custom Uploaded Background (uses image above if selected)</option>
+                <option value="default">Classic Gold Parchment Frame (Procedural Default)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Hide Default Ornamental Borders?</label>
+              <select id="annual-cert-hide-borders" onchange="refreshAnnualCertPreview()">
+                <option value="No">No — Keep Gold Border &amp; Ornamental Corners</option>
+                <option value="Yes">Yes — Hide Default Borders (for full template images)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Watermark College Logo?</label>
+              <select id="annual-cert-watermark" onchange="refreshAnnualCertPreview()">
+                <option value="No">No (Clean Background)</option>
+                <option value="Yes">Yes (Subtle College Logo Watermark)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group mt-2">
+          <label>Prestigious Wording Preset</label>
+          <select id="annual-wording-preset" onchange="applyAnnualWordingPreset(this.value)">
+            <option value="academic">🎓 Academic Merit &amp; Excellence</option>
+            <option value="leadership">🌟 Leadership &amp; Student of the Year</option>
+            <option value="cultural">🎨 Cultural &amp; Co-Curricular Talent</option>
+            <option value="sports">🏃 Sports &amp; Games Achievement</option>
+            <option value="custom">✍️ Custom Annual Day Wording</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prestigious Certificate Text</label>
+          <textarea id="annual-cert-prestigious-wording" rows="3" style="width:100%; padding:0.6rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.85rem; resize:vertical; line-height:1.4;" oninput="refreshAnnualCertPreview()"></textarea>
+        </div>
+        <div class="flex gap-2 justify-end">
+          <button class="btn btn-primary btn-sm" id="btn-save-annual-cert-settings" onclick="saveAnnualDaySettings()">💾 Save Annual Day Settings</button>
+        </div>
+      </div>
+
+      <!-- Upload Annual Day CSV Card -->
+      <div class="card no-print mb-3">
+        <h3 class="mb-2">Upload Annual Day Awardees CSV</h3>
+        <p class="text-muted mb-2" style="font-size:.85rem">
+          CSV columns: <code>StudentName, Department, EventName, Position</code> (Optional: <code>House, PhotoUrl, RollNo</code>)
+          <span class="text-success font-semibold" style="margin-left:8px;">★ House name is completely optional for Annual Day!</span>
+        </p>
+        <div class="flex gap-2 align-items-center" style="flex-wrap: wrap;">
+          <input type="file" id="annual-cert-csv-file" accept=".csv" style="display:none" onchange="handleAnnualCertCSVSelect(this)">
+          <label for="annual-cert-csv-file" class="btn btn-secondary btn-sm" style="margin: 0; cursor: pointer;">📂 Choose CSV File</label>
+          <span id="annual-cert-csv-status" class="text-muted" style="font-size:0.85rem">No file chosen</span>
+          <button class="btn btn-primary btn-sm hidden" id="annual-cert-csv-load-btn" onclick="loadAnnualCertCSV()">Load CSV Awardees</button>
+          <button class="btn btn-secondary btn-sm" onclick="downloadSampleAnnualCSV()">📥 Download Sample CSV</button>
+        </div>
+      </div>
+
+      <!-- Awardees List Table Card -->
+      <div class="card no-print mb-3">
+        <div style="display:flex; justify-content:space-between; align-items:center;" class="mb-2">
+          <h3 style="margin:0">Annual Day Awardees List <span id="annual-cert-list-mode-badge" class="badge badge-gold hidden" style="vertical-align: middle;">CSV Mode</span></h3>
+          <button id="annual-cert-reset-btn" class="btn btn-secondary btn-sm hidden" onclick="resetAnnualCertListSource()">Reset List</button>
+        </div>
+        <div class="table-wrap" style="max-height:300px;overflow-y:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Award / Subject</th>
+                <th>Position / Award Type</th>
+                <th>Awardee Name</th>
+                <th>Department</th>
+                <th>House</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="annual-cert-list-body">
+              <tr><td colspan="6" class="text-muted text-center">No awardees loaded yet. Upload a CSV file or load students.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Annual Day Certificate Print Area -->
+      <div id="annual-cert-print-area" class="cert-preview-container"></div>
+    </section>
   </main>
 </div>
 
@@ -521,6 +674,9 @@ const DEFAULT_POINTS_CONFIG = [
 let user, eventsData=[], housesData=[], studentsData=[], pointsConfig=[], resultsData=[];
 let activeCertSource = 'database';
 let csvResultsData = [];
+let activeAnnualCertSource = 'default';
+let annualResultsData = [];
+let _localAnnualBgDataUrl = '';
 let awardScanned = null;
 let chartInstance = null;
 
@@ -627,6 +783,11 @@ async function populateSelects() {
     housesData.forEach(h => { cfh.innerHTML += `<option>${h.HouseName}</option>`; });
   }
   filterCertificates();
+
+  // Annual Day Filters & Data Init
+  initAnnualAwardees();
+  populateAnnualSelects();
+  filterAnnualCertificates();
 
   renderEventsTable();
   renderHousesTable();
@@ -1219,6 +1380,58 @@ async function loadSettings() {
     presetDropdown.value = 'academic';
   } else {
     presetDropdown.value = 'custom';
+  }
+
+  // Load Annual Day Certificate Settings
+  const annualTitleInput = document.getElementById('annual-cert-program-name');
+  if (annualTitleInput) annualTitleInput.value = s.AnnualDayTitle || 'ANNUAL DAY 2026';
+  
+  const annualAwardInput = document.getElementById('annual-cert-award-title');
+  if (annualAwardInput) annualAwardInput.value = s.AnnualDayAwardTitle || 'Certificate of Merit';
+  
+  const annualPrintHouse = document.getElementById('annual-cert-print-house');
+  if (annualPrintHouse) annualPrintHouse.value = s.AnnualDayPrintHouse || 'No';
+  
+  const annualBgStyle = document.getElementById('annual-cert-bg-style');
+  if (annualBgStyle) annualBgStyle.value = s.AnnualDayBgStyle || 'custom';
+  
+  const annualHideBorders = document.getElementById('annual-cert-hide-borders');
+  if (annualHideBorders) annualHideBorders.value = s.AnnualDayHideBorders || 'No';
+  
+  const annualCenterDisplay = document.getElementById('annual-cert-center-display');
+  if (annualCenterDisplay) annualCenterDisplay.value = s.AnnualDayCenterDisplay || 'photo';
+
+  const annualWatermark = document.getElementById('annual-cert-watermark');
+  if (annualWatermark) annualWatermark.value = s.AnnualDayWatermark || 'No';
+  
+  const annualWordingInput = document.getElementById('annual-cert-prestigious-wording');
+  const annualWordingVal = s.AnnualDayPrestigiousWording || "In recognition of outstanding academic merit, exceptional scholastic performance, and exemplary dedication displayed during the Academic Year.";
+  if (annualWordingInput) annualWordingInput.value = annualWordingVal;
+
+  const annualPresetDropdown = document.getElementById('annual-wording-preset');
+  if (annualPresetDropdown) {
+    if (annualWordingVal.includes("scholastic performance") || annualWordingVal.includes("academic merit")) {
+      annualPresetDropdown.value = 'academic';
+    } else if (annualWordingVal.includes("leadership") || annualWordingVal.includes("growth of the institution")) {
+      annualPresetDropdown.value = 'leadership';
+    } else if (annualWordingVal.includes("artistic talent") || annualWordingVal.includes("Cultural Celebrations")) {
+      annualPresetDropdown.value = 'cultural';
+    } else if (annualWordingVal.includes("athletic excellence") || annualWordingVal.includes("sportsmanship")) {
+      annualPresetDropdown.value = 'sports';
+    } else {
+      annualPresetDropdown.value = 'custom';
+    }
+  }
+
+  // Load Annual Day Background preview if present in settings
+  if (s.AnnualDayBgUrl && !_localAnnualBgDataUrl) {
+    _localAnnualBgDataUrl = s.AnnualDayBgUrl;
+    const bgPreview = document.getElementById('annual-bg-preview-img');
+    const bgCont = document.getElementById('annual-bg-preview-container');
+    if (bgPreview && bgCont) {
+      bgPreview.src = getGoogleDriveThumbUrl(s.AnnualDayBgUrl);
+      bgCont.style.display = 'block';
+    }
   }
 
   // Populate House select dynamically in Branding tab
@@ -1931,6 +2144,517 @@ async function printAllCertificates() {
   let html = '';
   for (const winner of filtered) {
     html += await renderCertificateHTML(winner, s);
+  }
+  printArea.innerHTML = html;
+  
+  await waitForImages(printArea);
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove('printing-certificates');
+    printArea.innerHTML = '';
+  }, 250);
+}
+
+// ── Annual Day Certificates Studio ──────────────────────────────────────────────
+function initAnnualAwardees() {
+  if (annualResultsData && annualResultsData.length > 0) return;
+  const sampleAwards = [
+    'Academic Proficiency Award (1st Rank)',
+    'Best Outgoing Student of the Year',
+    'Centum in Mathematics & Computing',
+    'Merit in Communication & Oratory',
+    'Excellence in Cultural Arts',
+    'Special Endowment Award for Leadership',
+    'Academic Excellence (2nd Rank)',
+    'Distinction in Science & Research'
+  ];
+  if (studentsData && studentsData.length > 0) {
+    annualResultsData = studentsData.slice(0, 10).map((std, idx) => ({
+      EventName: sampleAwards[idx % sampleAwards.length],
+      Position: idx === 0 ? 'First Rank' : (idx === 1 ? 'Winner' : (idx % 2 === 0 ? 'Excellence' : 'Merit Award')),
+      StudentName: std.Name,
+      Department: std.Department || std.Dept || 'Arts & Science',
+      House: std.House || '',
+      PhotoUrl: std.PhotoUrl || ''
+    }));
+  } else {
+    annualResultsData = [
+      { EventName: 'Academic Proficiency Award', Position: 'First Rank', StudentName: 'Alex Pandian', Department: 'Computer Science', House: 'Nexus', PhotoUrl: '' },
+      { EventName: 'Best Outgoing Student', Position: 'Winner', StudentName: 'Priya Dharshini', Department: 'Commerce', House: 'Novas', PhotoUrl: '' },
+      { EventName: 'Centum in Advanced Calculus', Position: 'Special Merit', StudentName: 'Kavitha S', Department: 'Mathematics', House: '', PhotoUrl: '' },
+      { EventName: 'Oratorical Gold Medal', Position: '1st Place', StudentName: 'Rahul Kumar', Department: 'English Literature', House: 'Dynamos', PhotoUrl: '' },
+      { EventName: 'Scientific Innovation Merit', Position: 'Excellence', StudentName: 'Sneha M', Department: 'Physics', House: '', PhotoUrl: '' }
+    ];
+  }
+}
+
+function populateAnnualSelects() {
+  const deptSelect = document.getElementById('annual-cert-filter-dept');
+  const awardSelect = document.getElementById('annual-cert-filter-award');
+  if (!deptSelect || !awardSelect) return;
+  
+  const depts = [...new Set(annualResultsData.map(r => r.Department).filter(Boolean))].sort();
+  deptSelect.innerHTML = '<option value="">All Departments</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+  
+  const awards = [...new Set(annualResultsData.map(r => r.EventName).filter(Boolean))].sort();
+  awardSelect.innerHTML = '<option value="">All Awards / Events</option>' + awards.map(a => `<option value="${a}">${a}</option>`).join('');
+}
+
+function filterAnnualCertificates() {
+  const dept = (document.getElementById('annual-cert-filter-dept')?.value || '').toLowerCase();
+  const award = (document.getElementById('annual-cert-filter-award')?.value || '').toLowerCase();
+  
+  let list = annualResultsData;
+  if (dept) list = list.filter(r => (r.Department || '').toLowerCase() === dept);
+  if (award) list = list.filter(r => (r.EventName || '').toLowerCase() === award);
+  
+  renderAnnualCertificatesList(list);
+}
+
+function renderAnnualCertificatesList(list) {
+  const body = document.getElementById('annual-cert-list-body');
+  if (!body) return;
+  if (!list || !list.length) {
+    body.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No awardees match the current filters</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map((r, i) => {
+    const winJson = JSON.stringify(r).replace(/"/g, '&quot;');
+    return `<tr>
+      <td>${r.EventName}</td>
+      <td><span class="badge badge-gold">${r.Position}</span></td>
+      <td><strong>${r.StudentName}</strong></td>
+      <td>${r.Department || '-'}</td>
+      <td>${r.House ? `<span class="badge" style="background:rgba(201,160,84,0.15);color:#c9a054">${r.House}</span>` : '<span class="text-muted">-</span>'}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="printSingleAnnualCertificate(${winJson})">🖨️ Print</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+let annualCsvFile = null;
+function handleAnnualCertCSVSelect(input) {
+  if (input.files && input.files[0]) {
+    annualCsvFile = input.files[0];
+    document.getElementById('annual-cert-csv-status').textContent = annualCsvFile.name;
+    document.getElementById('annual-cert-csv-load-btn').classList.remove('hidden');
+  }
+}
+
+async function loadAnnualCertCSV() {
+  if (!annualCsvFile) { toast('Please choose a CSV file first', 'error'); return; }
+  try {
+    toast('Parsing Annual Day CSV file…', 'info');
+    const text = await annualCsvFile.text();
+    const parsed = parseCSV(text);
+    if (!parsed || !parsed.length) throw new Error('CSV is empty or invalid format');
+
+    const mapped = parsed.map(r => {
+      const getValue = (keys) => {
+        for (const k of keys) {
+          const matchKey = Object.keys(r).find(x => x.toLowerCase() === k.toLowerCase());
+          if (matchKey && r[matchKey] !== undefined) return String(r[matchKey]).trim();
+        }
+        return '';
+      };
+
+      const studentName = getValue(['StudentName', 'Student Name', 'Winner', 'Name', 'Student', 'Candidate', 'Awardee']);
+      const eventName = getValue(['EventName', 'Event Name', 'Award', 'Event', 'Subject', 'Category', 'Prize', 'Title']);
+      const position = getValue(['Position', 'Rank', 'Place', 'AwardType']) || 'Merit Award';
+      const dept = getValue(['Department', 'Dept', 'Branch', 'Class']);
+      const house = getValue(['House', 'HouseName', 'House Name', 'Team']);
+      const photoUrl = getValue(['PhotoUrl', 'Photo', 'Photo Url', 'Image']);
+
+      if (!studentName || !eventName) {
+        throw new Error('CSV must contain columns for StudentName and EventName / Award Name');
+      }
+
+      return {
+        StudentName: studentName,
+        EventName: eventName,
+        Position: position,
+        Department: dept,
+        House: house,
+        PhotoUrl: photoUrl
+      };
+    });
+
+    annualResultsData = mapped;
+    activeAnnualCertSource = 'csv';
+    toast(`Successfully loaded ${annualResultsData.length} awardees from CSV!`, 'success');
+
+    document.getElementById('annual-cert-list-mode-badge').classList.remove('hidden');
+    document.getElementById('annual-cert-reset-btn').classList.remove('hidden');
+
+    populateAnnualSelects();
+    filterAnnualCertificates();
+  } catch(e) {
+    toast('Error loading CSV: ' + e.message, 'error');
+  }
+}
+
+function downloadSampleAnnualCSV() {
+  const csvContent = "StudentName,Department,EventName,Position,House,PhotoUrl\n" +
+    "Alex Pandian,Computer Science,Academic Proficiency Award,1st Rank,Nexus,\n" +
+    "Priya Dharshini,Commerce,Best Outgoing Student,Winner,Novas,\n" +
+    "Kavitha S,Mathematics,Centum in Advanced Calculus,Special Merit,,\n" +
+    "Rahul Kumar,English Literature,Oratorical Gold Medal,First Place,Dynamos,\n" +
+    "Sneha M,Physics,Scientific Innovation Merit,Excellence Award,,";
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "annual_day_sample_awardees.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Sample CSV downloaded!', 'success');
+}
+
+function resetAnnualCertListSource() {
+  activeAnnualCertSource = 'default';
+  annualResultsData = [];
+  initAnnualAwardees();
+  
+  document.getElementById('annual-cert-list-mode-badge').classList.add('hidden');
+  document.getElementById('annual-cert-reset-btn').classList.add('hidden');
+  
+  const fileInput = document.getElementById('annual-cert-csv-file');
+  if (fileInput) fileInput.value = '';
+  document.getElementById('annual-cert-csv-status').textContent = 'No file chosen';
+  document.getElementById('annual-cert-csv-load-btn').classList.add('hidden');
+  
+  populateAnnualSelects();
+  filterAnnualCertificates();
+  toast('Reset to default awardees list.', 'info');
+}
+
+function handleAnnualBgSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _localAnnualBgDataUrl = e.target.result;
+    const preview = document.getElementById('annual-bg-preview-img');
+    const container = document.getElementById('annual-bg-preview-container');
+    if (preview && container) {
+      preview.src = _localAnnualBgDataUrl;
+      container.style.display = 'block';
+    }
+    const bgStyleSelect = document.getElementById('annual-cert-bg-style');
+    if (bgStyleSelect) bgStyleSelect.value = 'custom';
+    toast('✅ Background image loaded! Ready for preview and printing.', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadAnnualBgToDrive() {
+  const fileInput = document.getElementById('annual-cert-bg-file');
+  const file = fileInput ? fileInput.files[0] : null;
+  if (!file && !_localAnnualBgDataUrl) {
+    toast('Please choose a background image file first.', 'error');
+    return;
+  }
+  const btn = document.getElementById('btn-upload-annual-bg');
+  if (btn) btn.disabled = true;
+  try {
+    toast('Uploading background image to Google Drive…', 'info');
+    let b;
+    if (file) {
+      b = await fileToBase64(file);
+    } else {
+      const parts = _localAnnualBgDataUrl.split(',');
+      const mime = parts[0].match(/:(.*?);/)[1];
+      b = { base64: parts[1], mimeType: mime, filename: 'annual_cert_bg.png' };
+    }
+    const r = await apiUpload('uploadPhoto', { ...b, studentName: 'annual_bg', house: '', dept: '' });
+    if (!r.url) throw new Error('No URL returned for background image');
+    await apiPost('saveSetting', { Key: 'AnnualDayBgUrl', Value: r.url });
+    _localAnnualBgDataUrl = r.url;
+    _settings = null;
+    toast('✅ Background image saved to Drive and settings!', 'success');
+  } catch(err) {
+    toast('Upload failed: ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function removeAnnualBg() {
+  _localAnnualBgDataUrl = '';
+  const fileInput = document.getElementById('annual-cert-bg-file');
+  if (fileInput) fileInput.value = '';
+  const container = document.getElementById('annual-bg-preview-container');
+  if (container) container.style.display = 'none';
+  toast('Background image removed. Reverted to default gold parchment frame.', 'info');
+}
+
+function applyAnnualWordingPreset(val) {
+  const ta = document.getElementById('annual-cert-prestigious-wording');
+  if (!ta) return;
+  if (val === 'academic') {
+    ta.value = "In recognition of outstanding academic merit, exceptional scholastic performance, and exemplary dedication displayed during the Academic Year.";
+  } else if (val === 'leadership') {
+    ta.value = "In recognition of exceptional leadership qualities, integrity, and distinguished contribution towards the growth of the institution.";
+  } else if (val === 'cultural') {
+    ta.value = "In recognition of superior artistic talent, creative expression, and exemplary performance during the Annual Cultural Celebrations.";
+  } else if (val === 'sports') {
+    ta.value = "In recognition of outstanding athletic excellence, dedication, and commendable sportsmanship displayed during the college championships.";
+  }
+}
+
+function refreshAnnualCertPreview() {
+  // Triggered on input change
+}
+
+async function saveAnnualDaySettings() {
+  const progName = document.getElementById('annual-cert-program-name').value;
+  const awardTitle = document.getElementById('annual-cert-award-title').value;
+  const printHouse = document.getElementById('annual-cert-print-house').value;
+  const bgStyle = document.getElementById('annual-cert-bg-style').value;
+  const hideBorders = document.getElementById('annual-cert-hide-borders').value;
+  const centerDisplay = document.getElementById('annual-cert-center-display').value;
+  const watermark = document.getElementById('annual-cert-watermark').value;
+  const wording = document.getElementById('annual-cert-prestigious-wording').value;
+
+  const btn = document.getElementById('btn-save-annual-cert-settings');
+  if (btn) btn.disabled = true;
+
+  try {
+    toast('Saving Annual Day settings…', 'info');
+    await apiPost('saveSetting', { Key: 'AnnualDayTitle', Value: progName });
+    await apiPost('saveSetting', { Key: 'AnnualDayAwardTitle', Value: awardTitle });
+    await apiPost('saveSetting', { Key: 'AnnualDayPrintHouse', Value: printHouse });
+    await apiPost('saveSetting', { Key: 'AnnualDayBgStyle', Value: bgStyle });
+    await apiPost('saveSetting', { Key: 'AnnualDayHideBorders', Value: hideBorders });
+    await apiPost('saveSetting', { Key: 'AnnualDayCenterDisplay', Value: centerDisplay });
+    await apiPost('saveSetting', { Key: 'AnnualDayWatermark', Value: watermark });
+    await apiPost('saveSetting', { Key: 'AnnualDayPrestigiousWording', Value: wording });
+    if (_localAnnualBgDataUrl && _localAnnualBgDataUrl.startsWith('https://')) {
+      await apiPost('saveSetting', { Key: 'AnnualDayBgUrl', Value: _localAnnualBgDataUrl });
+    }
+    _settings = null;
+    toast('✅ Annual Day certificate settings saved!', 'success');
+  } catch(err) {
+    toast('Save failed: ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function renderAnnualCertificateHTML(r, s) {
+  const studentPhotoThumb = r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '';
+  const houseKey = 'logo_' + String(r.House || '').trim().toUpperCase();
+  const houseLogoUrl = s[houseKey] || '';
+  const houseLogoThumb = houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '';
+
+  const [logoSrc, founderSrc, studentPhotoSrc, houseLogoSrc] = await Promise.all([
+    imgToDataUrl(s.LogoUrl || ''),
+    imgToDataUrl(s.FounderUrl || ''),
+    studentPhotoThumb ? imgToDataUrl(studentPhotoThumb) : Promise.resolve(''),
+    houseLogoThumb ? imgToDataUrl(houseLogoThumb) : Promise.resolve('')
+  ]);
+
+  const finalLogo = logoSrc || getGoogleDriveThumbUrl(s.LogoUrl || '');
+  const finalFounder = founderSrc || getGoogleDriveThumbUrl(s.FounderUrl || '');
+  const finalStudentPhoto = studentPhotoSrc || studentPhotoThumb;
+  const finalHouseLogo = houseLogoSrc || houseLogoThumb;
+
+  // Options from UI or settings
+  const progName = (document.getElementById('annual-cert-program-name')?.value || s.AnnualDayTitle || 'ANNUAL DAY 2026').trim();
+  const awardTitle = (document.getElementById('annual-cert-award-title')?.value || s.AnnualDayAwardTitle || 'Certificate of Merit').trim();
+  const printHouseSetting = document.getElementById('annual-cert-print-house')?.value || s.AnnualDayPrintHouse || 'No';
+  const shouldPrintHouse = (printHouseSetting === 'Yes' && r.House && String(r.House).trim() !== '');
+
+  const bgStyle = document.getElementById('annual-cert-bg-style')?.value || s.AnnualDayBgStyle || 'custom';
+  const hideBorders = (document.getElementById('annual-cert-hide-borders')?.value || s.AnnualDayHideBorders || 'No') === 'Yes';
+  const showWatermark = (document.getElementById('annual-cert-watermark')?.value || s.AnnualDayWatermark || 'No') === 'Yes';
+  const centerDisplay = document.getElementById('annual-cert-center-display')?.value || s.AnnualDayCenterDisplay || 'photo';
+
+  const prestigiousWording = document.getElementById('annual-cert-prestigious-wording')?.value || s.AnnualDayPrestigiousWording || "In recognition of outstanding academic merit, exceptional scholastic performance, and exemplary dedication displayed during the Academic Year.";
+
+  // Custom Background
+  const bgUrl = (bgStyle === 'custom') ? (_localAnnualBgDataUrl || s.AnnualDayBgUrl || '') : '';
+  const hasCustomBg = Boolean(bgUrl);
+
+  let cardClasses = 'cert-card';
+  let cardStyles = '';
+  if (hasCustomBg) {
+    cardClasses += ' has-custom-bg';
+    cardStyles += ` background-image: url('${bgUrl}') !important; background-color: #ffffff !important;`;
+  }
+  if (hideBorders) {
+    cardClasses += ' custom-bg-no-border custom-bg-no-corners';
+  }
+
+  // Look up house color if house is used
+  const houseObj = housesData.find(h => isHouseMatch(h.HouseName, r.House));
+  const houseColor = houseObj && houseObj.Color ? houseObj.Color : '#c9a054';
+
+  // Position text
+  let posText = r.Position;
+  if (r.Position === '1st') posText = 'First Place';
+  else if (r.Position === '2nd') posText = 'Second Place';
+  else if (r.Position === '3rd') posText = 'Third Place';
+  else if (r.Position === 'Winner') posText = 'Winner';
+  else if (r.Position === 'RunnerUp') posText = 'Runner Up';
+
+  // Center display content
+  let centerContent = '';
+  if (centerDisplay === 'photo') {
+    if (finalStudentPhoto) {
+      centerContent = `<img src="${finalStudentPhoto}" alt="Student Photo" style="width: 100%; height: 100%; object-fit: cover;">`;
+    } else {
+      centerContent = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; font-weight: bold; text-transform: uppercase;">
+          <span style="font-size: 2.5rem; margin-bottom: 0.2rem;">👤</span>
+          <span style="font-size: 0.7rem; letter-spacing: 1px;">Photo</span>
+        </div>
+      `;
+    }
+  } else if (centerDisplay === 'crest') {
+    centerContent = `
+      <svg viewBox="0 0 100 100" style="width: 86%; height: 86%; margin: 7%; display: block;">
+        <circle cx="50" cy="50" r="42" fill="#fffdf4" stroke="#c9a054" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#c9a054" stroke-width="1" stroke-dasharray="2,2"/>
+        <path d="M22,50 C22,35 34,22 50,22 C66,22 78,35 78,50 C78,65 66,78 50,78 C34,78 22,65 22,50" fill="none" stroke="#c9a054" stroke-width="1.8"/>
+        <!-- Star & Ribbon -->
+        <g fill="#c9a054">
+          <polygon points="50,32 53,41 62,41 55,47 57,56 50,51 43,56 45,47 38,41 47,41"/>
+          <text x="50" y="66" font-family="'Cinzel', serif" font-size="8.5" font-weight="bold" fill="#8c6b2d" text-anchor="middle" letter-spacing="1">MERIT</text>
+        </g>
+      </svg>
+    `;
+  } else if (centerDisplay === 'logo') {
+    if (finalHouseLogo && shouldPrintHouse) {
+      centerContent = `<img src="${finalHouseLogo}" alt="House Logo" style="object-fit: contain !important; width: 80%; height: 80%; margin: 10%; background: transparent !important;">`;
+    } else if (finalLogo) {
+      centerContent = `<img src="${finalLogo}" alt="College Crest" style="object-fit: contain !important; width: 80%; height: 80%; margin: 10%; background: transparent !important;">`;
+    } else {
+      centerContent = `<div style="font-size:2rem;color:#c9a054">🎓</div>`;
+    }
+  } else {
+    centerContent = '';
+  }
+
+  const centerSectionHtml = (centerDisplay !== 'none') ? `
+    <div class="cert-middle-section">
+      <div class="cert-photo-frame" style="border-color: ${shouldPrintHouse ? houseColor : '#c9a054'} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
+        ${centerContent}
+      </div>
+    </div>
+  ` : '<div style="margin-top:0.5rem"></div>';
+
+  return `
+    <div class="cert-page-break">
+      <div class="${cardClasses}" style="${cardStyles}">
+        ${showWatermark && finalLogo ? `<div class="cert-watermark" style="background-image: url('${finalLogo}')"></div>` : ''}
+
+        ${!hideBorders ? `
+          <!-- Vector Ornamental Corners -->
+          <svg class="cert-corner top-left" viewBox="0 0 100 100" width="32" height="32"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+          <svg class="cert-corner top-right" viewBox="0 0 100 100" width="32" height="32" style="transform: scaleX(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+          <svg class="cert-corner bottom-left" viewBox="0 0 100 100" width="32" height="32" style="transform: scaleY(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+          <svg class="cert-corner bottom-right" viewBox="0 0 100 100" width="32" height="32" style="transform: scale(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+        ` : ''}
+
+        <!-- Header: Logo | College Name (2 lines bold) | Founder -->
+        <div class="cert-header">
+          <div class="cert-header-side">
+            ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
+          </div>
+          <div class="cert-header-title">
+            <h2>${s.CollegeName || 'DON BOSCO COLLEGE OF ARTS AND SCIENCE'}</h2>
+            <div class="cert-college-place">THIRUKAZHUKUNDRAM</div>
+          </div>
+          <div class="cert-header-side">
+            ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
+          </div>
+        </div>
+
+        <!-- Annual Day Program Title Block -->
+        <div class="cert-event-block">
+          <div class="cert-event-title">${progName}</div>
+          <div class="cert-award-text">${awardTitle}</div>
+        </div>
+        
+        <!-- Center Circular Frame (Photo / Medallion / Crest) -->
+        ${centerSectionHtml}
+
+        <!-- Student Name Banner -->
+        <div class="cert-name-banner">${r.StudentName}</div>
+
+        <!-- Certificate Body -->
+        <div class="cert-body">
+          <div class="cert-certify">This is to certify that the above mentioned student of</div>
+          ${r.Department ? `<div class="cert-dept-line">${r.Department} Department</div>` : ''}
+          ${shouldPrintHouse ? `<div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>` : ''}
+          <div class="cert-achievement-line">has secured <strong>${posText}</strong> in <strong>"${r.EventName}"</strong></div>
+        </div>
+
+        <!-- Prestigious Wording -->
+        <div class="cert-prestigious-wording">
+          ${prestigiousWording}
+        </div>
+
+        <!-- Footer: Secretary | Principal -->
+        <div class="cert-footer">
+          <div class="cert-sig-block">
+            <div class="cert-sig-name-cursive">&nbsp;</div>
+            <div class="cert-sig-line">Secretary</div>
+            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
+          </div>
+          <div class="cert-sig-block">
+            <div class="cert-sig-name-cursive">&nbsp;</div>
+            <div class="cert-sig-line">Principal</div>
+            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function printSingleAnnualCertificate(winner) {
+  const s = await getSettings();
+  toast('Preparing Annual Day certificate...', 'info');
+  document.body.classList.add('printing-certificates');
+  const printArea = document.getElementById('annual-cert-print-area');
+  printArea.innerHTML = await renderAnnualCertificateHTML(winner, s);
+  
+  await waitForImages(printArea);
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove('printing-certificates');
+    printArea.innerHTML = '';
+  }, 150);
+}
+
+async function printAllAnnualCertificates() {
+  const dept = (document.getElementById('annual-cert-filter-dept')?.value || '').toLowerCase();
+  const award = (document.getElementById('annual-cert-filter-award')?.value || '').toLowerCase();
+  let filtered = annualResultsData;
+  if (dept) filtered = filtered.filter(r => (r.Department || '').toLowerCase() === dept);
+  if (award) filtered = filtered.filter(r => (r.EventName || '').toLowerCase() === award);
+  
+  if (!filtered.length) {
+    toast('No awardees found to print certificates.', 'error');
+    return;
+  }
+  
+  const s = await getSettings();
+  toast(`Preparing ${filtered.length} Annual Day certificates...`, 'info');
+  
+  document.body.classList.add('printing-certificates');
+  const printArea = document.getElementById('annual-cert-print-area');
+  printArea.innerHTML = '';
+  
+  let html = '';
+  for (const winner of filtered) {
+    html += await renderAnnualCertificateHTML(winner, s);
   }
   printArea.innerHTML = html;
   
