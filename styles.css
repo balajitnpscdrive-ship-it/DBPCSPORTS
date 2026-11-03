@@ -131,23 +131,30 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   background: var(--glass);
   border-right: 1px solid var(--glass-border);
   backdrop-filter: blur(14px);
-  display: flex; flex-direction: column; gap: 0; padding: 1rem 0;
+  display: flex; flex-direction: column; gap: 0; padding: 0.75rem 0;
   position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
   overflow-y: auto;
 }
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(201, 160, 84, 0.4);
+  border-radius: 4px;
+}
 .sidebar-logo {
-  padding: 1rem 1.25rem 1.5rem;
+  padding: 0.75rem 1rem 1rem;
   border-bottom: 1px solid var(--glass-border);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 .sidebar-logo h2 { font-size: 1rem; color: var(--accent); }
 .sidebar-logo p  { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
 
 .nav-item {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.7rem 1.25rem;
+  display: flex; align-items: center; gap: 0.65rem;
+  padding: 0.52rem 1rem;
   color: var(--text-muted);
-  font-size: 0.9rem; font-weight: 500;
+  font-size: 0.85rem; font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
   border-left: 3px solid transparent;
@@ -625,9 +632,42 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 }
 
 .cert-card.has-custom-bg {
+  background: #ffffff !important;
   background-size: 100% 100% !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
+}
+
+.cert-card > :not(.cert-custom-bg-wrap) {
+  position: relative;
+  z-index: 2;
+}
+
+.cert-card .cert-watermark {
+  z-index: 1 !important;
+}
+
+.cert-card .cert-corner {
+  z-index: 3 !important;
+}
+
+.cert-custom-bg-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cert-custom-bg-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+  display: block !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .cert-card.custom-bg-no-border {
@@ -879,6 +919,7 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   justify-content: center;
   margin: 0.3rem 0;
   width: 100%;
+  z-index: 2;
 }
 
 .cert-photo-frame {
@@ -933,6 +974,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   line-height: 1.6;
   border-top: 1px solid rgba(201, 160, 84, 0.2);
   padding-top: 0.5rem;
+  z-index: 2;
+  position: relative;
 }
 
 .cert-footer {
@@ -1093,9 +1136,39 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   }
 
   .cert-page-break .cert-card.has-custom-bg {
+    background: #ffffff !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cert-page-break .cert-card > :not(.cert-custom-bg-wrap) {
+    position: relative !important;
+    z-index: 2 !important;
+  }
+
+  .cert-page-break .cert-corner {
+    z-index: 3 !important;
+  }
+
+  .cert-page-break .cert-custom-bg-wrap {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    display: block !important;
+    overflow: hidden !important;
+  }
+
+  .cert-page-break .cert-custom-bg-wrap img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: fill !important;
+    display: block !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
