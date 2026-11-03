@@ -164,7 +164,75 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
 .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: hsla(35,90%,55%,.08); }
 .nav-item .icon { font-size: 1.1rem; flex-shrink: 0; }
 
-.main-content { margin-left: 220px; flex: 1; padding: 2rem; }
+.main-content {
+  margin-left: 220px;
+  flex: 1;
+  padding: 1.5rem 2rem 3rem 2rem;
+  min-width: 0;
+  max-width: calc(100vw - 220px);
+  box-sizing: border-box;
+}
+
+.section-page {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+/* ── Student Photo Capture Modal & Elements ───────── */
+.photo-modal-preview-box {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 3px solid #c9a054;
+  overflow: hidden;
+  margin: 0 auto 1rem auto;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+.photo-modal-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.camera-stream-box {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #c9a054;
+  background: #000;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+.camera-stream-box video {
+  width: 100%;
+  height: auto;
+  display: block;
+  transform: scaleX(-1); /* Mirror view for natural self-capture */
+}
+.camera-guide-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  border: 2px dashed rgba(201, 160, 84, 0.7);
+  border-radius: 50%;
+  pointer-events: none;
+}
 
 /* ── Top Bar ──────────────────────────────────────── */
 .topbar {
@@ -408,7 +476,7 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   .mobile-menu-btn { display: block; }
   .sidebar { transform: translateX(-100%); transition: transform .3s; }
   .sidebar.open { transform: translateX(0); }
-  .main-content { margin-left: 0; padding: 4.5rem 1rem 1rem 1rem; }
+  .main-content { margin-left: 0; max-width: 100vw; padding: 4.5rem 1rem 1rem 1rem; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .score-cards { grid-template-columns: 1fr 1fr; }
 }
@@ -1159,6 +1227,25 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     margin: 0 !important;
     width: 100% !important;
     height: auto !important; /* Allow growing */
+  }
+
+  /* Suppress everything except the actual certificate print areas */
+  body.printing-certificates #sec-certificates > *:not(#cert-print-area),
+  body.printing-certificates #sec-annual-certificates > *:not(#annual-cert-print-area),
+  body.printing-certificates .container > *:not(#annual-cert-print-area),
+  body.printing-certificates #annual-live-preview-box,
+  body.printing-certificates #annual-live-preview-content,
+  body.printing-certificates #live-preview-box,
+  body.printing-certificates #live-preview-content {
+    display: none !important;
+  }
+
+  body.printing-certificates #cert-print-area,
+  body.printing-certificates #annual-cert-print-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   body.printing-certificates .card {
