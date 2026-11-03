@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annual Day Certificate Studio | Don Bosco College</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Main Styles -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .app-header {
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .app-brand img {
+      height: 48px;
+      object-fit: contain;
+    }
+    .app-title h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin: 0;
+      background: linear-gradient(135deg, #fff 0%, #c9a054 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .app-title p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .toolbar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .badge-soft {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(201, 160, 84, 0.15);
+      color: #c9a054;
+      border: 1px solid rgba(201, 160, 84, 0.3);
+    }
+    @media print {
+      .no-print, .app-header {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header no-print">
+    <div class="app-brand">
+      <img id="header-logo" src="icon.svg" alt="College Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23c9a054\'%3E%3Cpath d=\'M12 2L1 21h22L12 2zm0 4l7.5 13h-15L12 6z\'/%3E%3C/svg%3E'">
+      <div class="app-title">
+        <h1 id="header-college-title">DON BOSCO COLLEGE OF ARTS AND SCIENCE</h1>
+        <p>Annual Day &amp; Merit Award Certificate Studio &bull; Thirukazhukundram</p>
+      </div>
+    </div>
+    <div class="btn-group">
+      <a href="committee.html" class="btn btn-secondary btn-sm">🏛️ Committee Portal</a>
+      <button class="btn btn-primary btn-sm" onclick="printAllAnnualCertificates()">🖨️ Print All (Bulk)</button>
+    </div>
+  </header>
+
+  <div class="container no-print">
+    <!-- Toolbar Cards -->
+    <div class="toolbar-grid">
+      <!-- Card 1: Certificate Layout & House Options -->
+      <div class="card">
+        <h3 class="mb-2" style="display:flex;align-items:center;gap:0.5rem;">
+          <span>⚙️</span> Certificate Settings
+        </h3>
+        <p class="text-muted mb-2" style="font-size:0.8rem">
+          Configure Annual Day branding, program name, and optional house name printing.
+        </p>
+
+        <div class="form-group">
+          <label>Program Name / Event Title</label>
+          <input type="text" id="annual-cert-program-name" value="ANNUAL DAY 2026" style="width:100%; padding:0.6rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.9rem;" oninput="refreshAnnualCertPreview()">
+        </div>
+
+        <div class="form-group">
+          <label>Award Sub-Title</label>
+          <select id="annual-cert-award-title" onchange="refreshAnnualCertPreview()">
+            <option value="Certificate of Merit">Certificate of Merit</option>
+            <option value="Certificate of Academic Excellence">Certificate of Academic Excellence</option>
+            <option value="Certificate of Appreciation">Certificate of Appreciation</option>
+            <option value="Certificate of Achievement">Certificate of Achievement</option>
+            <option value="Special Endowment Award">Special Endowment Award</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Print House Name on Certificate?</label>
+          <select id="annual-cert-print-house" onchange="refreshAnnualCertPreview()">
+            <option value="No">No — Omit House (Standard for Annual Day)</option>
+            <option value="Yes">Yes — Include House Name</option>
+          </select>
+          <small class="text-muted" style="display:block;margin-top:0.2rem;font-size:0.75rem;">
+            When "No" is selected, certificates omit the house line completely.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Center Circular Frame Content</label>
+          <select id="annual-cert-center-display" onchange="refreshAnnualCertPreview()">
+            <option value="photo">👤 Student Photo (or silhouette placeholder)</option>
+            <option value="crest">🏅 Golden Annual Day Medallion / Crest</option>
+            <option value="logo">🏠 House Logo / Dynamic Shield</option>
+            <option value="none">🚫 Clean (No Center Frame)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Card 2: Custom Background & Frame Options -->
+      <div class="card">
+        <h3 class="mb-2" style="display:flex;align-items:center;gap:0.5rem;">
+          <span>🖼️</span> Background &amp; Template
+        </h3>
+        <p class="text-muted mb-2" style="font-size:0.8rem">
+          Upload an ornate background image or use the classic royal parchment border.
+        </p>
+
+        <div class="form-group">
+          <label>Upload Certificate Background Image</label>
+          <div class="btn-group mb-1">
+            <input type="file" id="annual-cert-bg-file" accept="image/*" style="display:none" onchange="handleAnnualBgSelect(this)">
+            <label for="annual-cert-bg-file" class="btn btn-secondary btn-sm" style="margin:0;cursor:pointer;">📂 Choose Background</label>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeAnnualBg()">🗑️ Clear</button>
+          </div>
+          <div id="annual-bg-preview-container" style="display:none;margin-top:0.5rem;">
+            <div style="font-size:0.75rem;color:#aaa;margin-bottom:0.2rem;">Loaded Background Preview:</div>
+            <img id="annual-bg-preview-img" src="" alt="Background Preview" style="height:70px;border-radius:6px;border:1px solid var(--glass-border);object-fit:contain;background:#fff;padding:2px;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Certificate Background Style</label>
+          <select id="annual-cert-bg-style" onchange="refreshAnnualCertPreview()">
+            <option value="custom">Custom Uploaded Background</option>
+            <option value="default">Classic Gold Parchment Frame (Default)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Hide Default Ornamental Borders?</label>
+          <select id="annual-cert-hide-borders" onchange="refreshAnnualCertPreview()">
+            <option value="No">No — Keep Gold Border &amp; Ornamental Corners</option>
+            <option value="Yes">Yes — Hide Default Borders (for full template images)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Watermark College Logo?</label>
+          <select id="annual-cert-watermark" onchange="refreshAnnualCertPreview()">
+            <option value="No">No (Clean Background)</option>
+            <option value="Yes">Yes (Subtle College Logo Watermark)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Card 3: Prestigious Wording & Presets -->
+      <div class="card">
+        <h3 class="mb-2" style="display:flex;align-items:center;gap:0.5rem;">
+          <span>✍️</span> Prestigious Wording
+        </h3>
+        <p class="text-muted mb-2" style="font-size:0.8rem">
+          Choose a prestigious preset wording or write your own custom ceremony phrase.
+        </p>
+
+        <div class="form-group">
+          <label>Prestigious Wording Preset</label>
+          <select id="annual-wording-preset" onchange="applyAnnualWordingPreset(this.value)">
+            <option value="academic">🎓 Academic Merit &amp; Excellence</option>
+            <option value="leadership">🌟 Leadership &amp; Student of the Year</option>
+            <option value="cultural">🎨 Cultural &amp; Co-Curricular Talent</option>
+            <option value="sports">🏃 Sports &amp; Games Achievement</option>
+            <option value="custom">✍️ Custom Annual Day Wording</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Prestigious Certificate Text</label>
+          <textarea id="annual-cert-prestigious-wording" rows="3" style="width:100%;padding:0.6rem;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:inherit;font-size:0.85rem;resize:vertical;line-height:1.4;" oninput="refreshAnnualCertPreview()">In recognition of outstanding academic merit, exceptional scholastic performance, and exemplary dedication displayed during the Academic Year.</textarea>
+        </div>
+
+        <div class="btn-group justify-end mt-2">
+          <button class="btn btn-primary btn-sm" id="btn-save-annual-cert-settings" onclick="saveAnnualDaySettings()">💾 Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Awardees CSV Uploader Card -->
+    <div class="card mb-3">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h3 style="margin:0 0 0.3rem 0;">📁 Import Awardees CSV</h3>
+          <p class="text-muted" style="margin:0;font-size:0.85rem;">
+            Columns supported: <code>StudentName, Department, EventName, Position</code> (Optional: <code>House, PhotoUrl, RollNo</code>)
+            <span class="badge-soft" style="margin-left:8px;">★ House name is optional</span>
+          </p>
+        </div>
+        <div class="btn-group">
+          <input type="file" id="annual-cert-csv-file" accept=".csv" style="display:none" onchange="handleAnnualCertCSVSelect(this)">
+          <label for="annual-cert-csv-file" class="btn btn-secondary btn-sm" style="margin:0;cursor:pointer;">📂 Choose CSV File</label>
+          <span id="annual-cert-csv-status" class="text-muted" style="font-size:0.85rem;align-self:center;">No file chosen</span>
+          <button class="btn btn-primary btn-sm hidden" id="annual-cert-csv-load-btn" onclick="loadAnnualCertCSV()">Load CSV Awardees</button>
+          <button class="btn btn-secondary btn-sm" onclick="downloadSampleAnnualCSV()">📥 Download Sample CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Awardees List Table Card -->
+    <div class="card mb-4">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:1rem;">
+        <h3 style="margin:0;">Annual Day Awardees List <span id="annual-cert-list-mode-badge" class="badge badge-gold hidden" style="vertical-align:middle;">CSV Mode</span></h3>
+        <div class="btn-group">
+          <select id="annual-cert-filter-dept" onchange="filterAnnualCertificates()"><option value="">All Departments</option></select>
+          <select id="annual-cert-filter-award" onchange="filterAnnualCertificates()"><option value="">All Awards / Events</option></select>
+          <button id="annual-cert-reset-btn" class="btn btn-secondary btn-sm hidden" onclick="resetAnnualCertListSource()">Reset List</button>
+        </div>
+      </div>
+      <div class="table-wrap" style="max-height:320px;overflow-y:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Award / Subject</th>
+              <th>Position / Award Type</th>
+              <th>Awardee Name</th>
+              <th>Department</th>
+              <th>House</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="annual-cert-list-body">
+            <tr><td colspan="6" class="text-muted text-center">Loading awardees...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Annual Day Certificate Print Area -->
+  <div id="annual-cert-print-area" class="cert-preview-container"></div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="api.js"></script>
+  <script>
+    let annualResultsData = [];
+    let _localAnnualBgDataUrl = '';
+    let _settings = null;
+    let housesData = [];
+    let studentsData = [];
+
+    function toast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      if (!c) return;
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+    }
+
+    function isHouseMatch(h1, h2) {
+      return String(h1 || '').trim().toLowerCase() === String(h2 || '').trim().toLowerCase();
+    }
+
+    async function getSettings() {
+      if (_settings) return _settings;
+      try {
+        _settings = await apiGet('getSettings');
+      } catch(e) {
+        _settings = {};
+      }
+      return _settings;
+    }
+
+    (async function init() {
+      try {
+        const [hss, stds, s] = await Promise.all([
+          apiGet('getHouses').catch(() => []),
+          apiGet('getStudents').catch(() => []),
+          getSettings()
+        ]);
+        housesData = hss;
+        studentsData = stds;
+        
+        if (s.CollegeName) {
+          document.getElementById('header-college-title').textContent = s.CollegeName;
+        }
+        if (s.LogoUrl) {
+          document.getElementById('header-logo').src = getGoogleDriveThumbUrl(s.LogoUrl);
+        }
+
+        // Load Settings
+        if (s.AnnualDayTitle) document.getElementById('annual-cert-program-name').value = s.AnnualDayTitle;
+        if (s.AnnualDayAwardTitle) document.getElementById('annual-cert-award-title').value = s.AnnualDayAwardTitle;
+        if (s.AnnualDayPrintHouse) document.getElementById('annual-cert-print-house').value = s.AnnualDayPrintHouse;
+        if (s.AnnualDayBgStyle) document.getElementById('annual-cert-bg-style').value = s.AnnualDayBgStyle;
+        if (s.AnnualDayHideBorders) document.getElementById('annual-cert-hide-borders').value = s.AnnualDayHideBorders;
+        if (s.AnnualDayCenterDisplay) document.getElementById('annual-cert-center-display').value = s.AnnualDayCenterDisplay;
+        if (s.AnnualDayWatermark) document.getElementById('annual-cert-watermark').value = s.AnnualDayWatermark;
+        if (s.AnnualDayPrestigiousWording) document.getElementById('annual-cert-prestigious-wording').value = s.AnnualDayPrestigiousWording;
+
+        if (s.AnnualDayBgUrl) {
+          _localAnnualBgDataUrl = s.AnnualDayBgUrl;
+          const bgPreview = document.getElementById('annual-bg-preview-img');
+          const bgCont = document.getElementById('annual-bg-preview-container');
+          if (bgPreview && bgCont) {
+            bgPreview.src = getGoogleDriveThumbUrl(s.AnnualDayBgUrl);
+            bgCont.style.display = 'block';
+          }
+        }
+      } catch(err) {
+        console.warn('Backend not linked yet, running in standalone mode:', err);
+      }
+
+      initAnnualAwardees();
+      populateAnnualSelects();
+      filterAnnualCertificates();
+    })();
+
+    function initAnnualAwardees() {
+      if (annualResultsData && annualResultsData.length > 0) return;
+      const sampleAwards = [
+        'Academic Proficiency Award (1st Rank)',
+        'Best Outgoing Student of the Year',
+        'Centum in Mathematics & Computing',
+        'Merit in Communication & Oratory',
+        'Excellence in Cultural Arts',
+        'Special Endowment Award for Leadership',
+        'Academic Excellence (2nd Rank)',
+        'Distinction in Science & Research'
+      ];
+      if (studentsData && studentsData.length > 0) {
+        annualResultsData = studentsData.slice(0, 10).map((std, idx) => ({
+          EventName: sampleAwards[idx % sampleAwards.length],
+          Position: idx === 0 ? 'First Rank' : (idx === 1 ? 'Winner' : (idx % 2 === 0 ? 'Excellence' : 'Merit Award')),
+          StudentName: std.Name,
+          Department: std.Department || std.Dept || 'Arts & Science',
+          House: std.House || '',
+          PhotoUrl: std.PhotoUrl || ''
+        }));
+      } else {
+        annualResultsData = [
+          { EventName: 'Academic Proficiency Award', Position: 'First Rank', StudentName: 'Alex Pandian', Department: 'Computer Science', House: 'Nexus', PhotoUrl: '' },
+          { EventName: 'Best Outgoing Student', Position: 'Winner', StudentName: 'Priya Dharshini', Department: 'Commerce', House: 'Novas', PhotoUrl: '' },
+          { EventName: 'Centum in Advanced Calculus', Position: 'Special Merit', StudentName: 'Kavitha S', Department: 'Mathematics', House: '', PhotoUrl: '' },
+          { EventName: 'Oratorical Gold Medal', Position: '1st Place', StudentName: 'Rahul Kumar', Department: 'English Literature', House: 'Dynamos', PhotoUrl: '' },
+          { EventName: 'Scientific Innovation Merit', Position: 'Excellence', StudentName: 'Sneha M', Department: 'Physics', House: '', PhotoUrl: '' }
+        ];
+      }
+    }
+
+    function populateAnnualSelects() {
+      const deptSelect = document.getElementById('annual-cert-filter-dept');
+      const awardSelect = document.getElementById('annual-cert-filter-award');
+      if (!deptSelect || !awardSelect) return;
+      
+      const depts = [...new Set(annualResultsData.map(r => r.Department).filter(Boolean))].sort();
+      deptSelect.innerHTML = '<option value="">All Departments</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+      
+      const awards = [...new Set(annualResultsData.map(r => r.EventName).filter(Boolean))].sort();
+      awardSelect.innerHTML = '<option value="">All Awards / Events</option>' + awards.map(a => `<option value="${a}">${a}</option>`).join('');
+    }
+
+    function filterAnnualCertificates() {
+      const dept = (document.getElementById('annual-cert-filter-dept')?.value || '').toLowerCase();
+      const award = (document.getElementById('annual-cert-filter-award')?.value || '').toLowerCase();
+      
+      let list = annualResultsData;
+      if (dept) list = list.filter(r => (r.Department || '').toLowerCase() === dept);
+      if (award) list = list.filter(r => (r.EventName || '').toLowerCase() === award);
+      
+      renderAnnualCertificatesList(list);
+    }
+
+    function renderAnnualCertificatesList(list) {
+      const body = document.getElementById('annual-cert-list-body');
+      if (!body) return;
+      if (!list || !list.length) {
+        body.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No awardees match the current filters</td></tr>';
+        return;
+      }
+      body.innerHTML = list.map((r, i) => {
+        const winJson = JSON.stringify(r).replace(/"/g, '&quot;');
+        return `<tr>
+          <td>${r.EventName}</td>
+          <td><span class="badge badge-gold">${r.Position}</span></td>
+          <td><strong>${r.StudentName}</strong></td>
+          <td>${r.Department || '-'}</td>
+          <td>${r.House ? `<span class="badge" style="background:rgba(201,160,84,0.15);color:#c9a054">${r.House}</span>` : '<span class="text-muted">-</span>'}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="printSingleAnnualCertificate(${winJson})">🖨️ Print</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    let annualCsvFile = null;
+    function handleAnnualCertCSVSelect(input) {
+      if (input.files && input.files[0]) {
+        annualCsvFile = input.files[0];
+        document.getElementById('annual-cert-csv-status').textContent = annualCsvFile.name;
+        document.getElementById('annual-cert-csv-load-btn').classList.remove('hidden');
+      }
+    }
+
+    async function loadAnnualCertCSV() {
+      if (!annualCsvFile) { toast('Please choose a CSV file first', 'error'); return; }
+      try {
+        toast('Parsing Annual Day CSV file…', 'info');
+        const text = await annualCsvFile.text();
+        const parsed = parseCSV(text);
+        if (!parsed || !parsed.length) throw new Error('CSV is empty or invalid format');
+
+        const mapped = parsed.map(r => {
+          const getValue = (keys) => {
+            for (const k of keys) {
+              const matchKey = Object.keys(r).find(x => x.toLowerCase() === k.toLowerCase());
+              if (matchKey && r[matchKey] !== undefined) return String(r[matchKey]).trim();
+            }
+            return '';
+          };
+
+          const studentName = getValue(['StudentName', 'Student Name', 'Winner', 'Name', 'Student', 'Candidate', 'Awardee']);
+          const eventName = getValue(['EventName', 'Event Name', 'Award', 'Event', 'Subject', 'Category', 'Prize', 'Title']);
+          const position = getValue(['Position', 'Rank', 'Place', 'AwardType']) || 'Merit Award';
+          const dept = getValue(['Department', 'Dept', 'Branch', 'Class']);
+          const house = getValue(['House', 'HouseName', 'House Name', 'Team']);
+          const photoUrl = getValue(['PhotoUrl', 'Photo', 'Photo Url', 'Image']);
+
+          if (!studentName || !eventName) {
+            throw new Error('CSV must contain columns for StudentName and EventName / Award Name');
+          }
+
+          return {
+            StudentName: studentName,
+            EventName: eventName,
+            Position: position,
+            Department: dept,
+            House: house,
+            PhotoUrl: photoUrl
+          };
+        });
+
+        annualResultsData = mapped;
+        toast(`Successfully loaded ${annualResultsData.length} awardees from CSV!`, 'success');
+
+        document.getElementById('annual-cert-list-mode-badge').classList.remove('hidden');
+        document.getElementById('annual-cert-reset-btn').classList.remove('hidden');
+
+        populateAnnualSelects();
+        filterAnnualCertificates();
+      } catch(e) {
+        toast('Error loading CSV: ' + e.message, 'error');
+      }
+    }
+
+    function downloadSampleAnnualCSV() {
+      const csvContent = "StudentName,Department,EventName,Position,House,PhotoUrl\n" +
+        "Alex Pandian,Computer Science,Academic Proficiency Award,1st Rank,Nexus,\n" +
+        "Priya Dharshini,Commerce,Best Outgoing Student,Winner,Novas,\n" +
+        "Kavitha S,Mathematics,Centum in Advanced Calculus,Special Merit,,\n" +
+        "Rahul Kumar,English Literature,Oratorical Gold Medal,First Place,Dynamos,\n" +
+        "Sneha M,Physics,Scientific Innovation Merit,Excellence Award,,";
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "annual_day_sample_awardees.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('Sample CSV downloaded!', 'success');
+    }
+
+    function resetAnnualCertListSource() {
+      annualResultsData = [];
+      initAnnualAwardees();
+      
+      document.getElementById('annual-cert-list-mode-badge').classList.add('hidden');
+      document.getElementById('annual-cert-reset-btn').classList.add('hidden');
+      
+      const fileInput = document.getElementById('annual-cert-csv-file');
+      if (fileInput) fileInput.value = '';
+      document.getElementById('annual-cert-csv-status').textContent = 'No file chosen';
+      document.getElementById('annual-cert-csv-load-btn').classList.add('hidden');
+      
+      populateAnnualSelects();
+      filterAnnualCertificates();
+      toast('Reset to default awardees list.', 'info');
+    }
+
+    function handleAnnualBgSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        _localAnnualBgDataUrl = e.target.result;
+        const preview = document.getElementById('annual-bg-preview-img');
+        const container = document.getElementById('annual-bg-preview-container');
+        if (preview && container) {
+          preview.src = _localAnnualBgDataUrl;
+          container.style.display = 'block';
+        }
+        const bgStyleSelect = document.getElementById('annual-cert-bg-style');
+        if (bgStyleSelect) bgStyleSelect.value = 'custom';
+        toast('✅ Background image loaded! Ready for preview and printing.', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAnnualBg() {
+      _localAnnualBgDataUrl = '';
+      const fileInput = document.getElementById('annual-cert-bg-file');
+      if (fileInput) fileInput.value = '';
+      const container = document.getElementById('annual-bg-preview-container');
+      if (container) container.style.display = 'none';
+      toast('Background image removed. Reverted to default gold parchment frame.', 'info');
+    }
+
+    function applyAnnualWordingPreset(val) {
+      const ta = document.getElementById('annual-cert-prestigious-wording');
+      if (!ta) return;
+      if (val === 'academic') {
+        ta.value = "In recognition of outstanding academic merit, exceptional scholastic performance, and exemplary dedication displayed during the Academic Year.";
+      } else if (val === 'leadership') {
+        ta.value = "In recognition of exceptional leadership qualities, integrity, and distinguished contribution towards the growth of the institution.";
+      } else if (val === 'cultural') {
+        ta.value = "In recognition of superior artistic talent, creative expression, and exemplary performance during the Annual Cultural Celebrations.";
+      } else if (val === 'sports') {
+        ta.value = "In recognition of outstanding athletic excellence, dedication, and commendable sportsmanship displayed during the college championships.";
+      }
+    }
+
+    function refreshAnnualCertPreview() {
+      // Triggered on form input changes
+    }
+
+    async function saveAnnualDaySettings() {
+      const progName = document.getElementById('annual-cert-program-name').value;
+      const awardTitle = document.getElementById('annual-cert-award-title').value;
+      const printHouse = document.getElementById('annual-cert-print-house').value;
+      const bgStyle = document.getElementById('annual-cert-bg-style').value;
+      const hideBorders = document.getElementById('annual-cert-hide-borders').value;
+      const centerDisplay = document.getElementById('annual-cert-center-display').value;
+      const watermark = document.getElementById('annual-cert-watermark').value;
+      const wording = document.getElementById('annual-cert-prestigious-wording').value;
+
+      const btn = document.getElementById('btn-save-annual-cert-settings');
+      if (btn) btn.disabled = true;
+
+      try {
+        toast('Saving Annual Day settings…', 'info');
+        await apiPost('saveSetting', { Key: 'AnnualDayTitle', Value: progName });
+        await apiPost('saveSetting', { Key: 'AnnualDayAwardTitle', Value: awardTitle });
+        await apiPost('saveSetting', { Key: 'AnnualDayPrintHouse', Value: printHouse });
+        await apiPost('saveSetting', { Key: 'AnnualDayBgStyle', Value: bgStyle });
+        await apiPost('saveSetting', { Key: 'AnnualDayHideBorders', Value: hideBorders });
+        await apiPost('saveSetting', { Key: 'AnnualDayCenterDisplay', Value: centerDisplay });
+        await apiPost('saveSetting', { Key: 'AnnualDayWatermark', Value: watermark });
+        await apiPost('saveSetting', { Key: 'AnnualDayPrestigiousWording', Value: wording });
+        _settings = null;
+        toast('✅ Annual Day certificate settings saved!', 'success');
+      } catch(err) {
+        toast('Settings saved locally in session.', 'info');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function renderAnnualCertificateHTML(r, s) {
+      const studentPhotoThumb = r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '';
+      const houseKey = 'logo_' + String(r.House || '').trim().toUpperCase();
+      const houseLogoUrl = s[houseKey] || '';
+      const houseLogoThumb = houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '';
+
+      const [logoSrc, founderSrc, studentPhotoSrc, houseLogoSrc] = await Promise.all([
+        imgToDataUrl(s.LogoUrl || ''),
+        imgToDataUrl(s.FounderUrl || ''),
+        studentPhotoThumb ? imgToDataUrl(studentPhotoThumb) : Promise.resolve(''),
+        houseLogoThumb ? imgToDataUrl(houseLogoThumb) : Promise.resolve('')
+      ]);
+
+      const finalLogo = logoSrc || getGoogleDriveThumbUrl(s.LogoUrl || '');
+      const finalFounder = founderSrc || getGoogleDriveThumbUrl(s.FounderUrl || '');
+      const finalStudentPhoto = studentPhotoSrc || studentPhotoThumb;
+      const finalHouseLogo = houseLogoSrc || houseLogoThumb;
+
+      const progName = (document.getElementById('annual-cert-program-name')?.value || s.AnnualDayTitle || 'ANNUAL DAY 2026').trim();
+      const awardTitle = (document.getElementById('annual-cert-award-title')?.value || s.AnnualDayAwardTitle || 'Certificate of Merit').trim();
+      const printHouseSetting = document.getElementById('annual-cert-print-house')?.value || s.AnnualDayPrintHouse || 'No';
+      const shouldPrintHouse = (printHouseSetting === 'Yes' && r.House && String(r.House).trim() !== '');
+
+      const bgStyle = document.getElementById('annual-cert-bg-style')?.value || s.AnnualDayBgStyle || 'custom';
+      const hideBorders = (document.getElementById('annual-cert-hide-borders')?.value || s.AnnualDayHideBorders || 'No') === 'Yes';
+      const showWatermark = (document.getElementById('annual-cert-watermark')?.value || s.AnnualDayWatermark || 'No') === 'Yes';
+      const centerDisplay = document.getElementById('annual-cert-center-display')?.value || s.AnnualDayCenterDisplay || 'photo';
+
+      const prestigiousWording = document.getElementById('annual-cert-prestigious-wording')?.value || s.AnnualDayPrestigiousWording || "In recognition of outstanding academic merit, exceptional scholastic performance, and exemplary dedication displayed during the Academic Year.";
+
+      const bgUrl = (bgStyle === 'custom') ? (_localAnnualBgDataUrl || s.AnnualDayBgUrl || '') : '';
+      const hasCustomBg = Boolean(bgUrl);
+
+      let cardClasses = 'cert-card';
+      let cardStyles = '';
+      if (hasCustomBg) {
+        cardClasses += ' has-custom-bg';
+        cardStyles += ` background-image: url('${bgUrl}') !important; background-color: #ffffff !important;`;
+      }
+      if (hideBorders) {
+        cardClasses += ' custom-bg-no-border custom-bg-no-corners';
+      }
+
+      const houseObj = housesData.find(h => isHouseMatch(h.HouseName, r.House));
+      const houseColor = houseObj && houseObj.Color ? houseObj.Color : '#c9a054';
+
+      let posText = r.Position;
+      if (r.Position === '1st') posText = 'First Place';
+      else if (r.Position === '2nd') posText = 'Second Place';
+      else if (r.Position === '3rd') posText = 'Third Place';
+      else if (r.Position === 'Winner') posText = 'Winner';
+      else if (r.Position === 'RunnerUp') posText = 'Runner Up';
+
+      let centerContent = '';
+      if (centerDisplay === 'photo') {
+        if (finalStudentPhoto) {
+          centerContent = `<img src="${finalStudentPhoto}" alt="Student Photo" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else {
+          centerContent = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; font-weight: bold; text-transform: uppercase;">
+              <span style="font-size: 2.5rem; margin-bottom: 0.2rem;">👤</span>
+              <span style="font-size: 0.7rem; letter-spacing: 1px;">Photo</span>
+            </div>
+          `;
+        }
+      } else if (centerDisplay === 'crest') {
+        centerContent = `
+          <svg viewBox="0 0 100 100" style="width: 86%; height: 86%; margin: 7%; display: block;">
+            <circle cx="50" cy="50" r="42" fill="#fffdf4" stroke="#c9a054" stroke-width="2.5"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#c9a054" stroke-width="1" stroke-dasharray="2,2"/>
+            <path d="M22,50 C22,35 34,22 50,22 C66,22 78,35 78,50 C78,65 66,78 50,78 C34,78 22,65 22,50" fill="none" stroke="#c9a054" stroke-width="1.8"/>
+            <g fill="#c9a054">
+              <polygon points="50,32 53,41 62,41 55,47 57,56 50,51 43,56 45,47 38,41 47,41"/>
+              <text x="50" y="66" font-family="'Cinzel', serif" font-size="8.5" font-weight="bold" fill="#8c6b2d" text-anchor="middle" letter-spacing="1">MERIT</text>
+            </g>
+          </svg>
+        `;
+      } else if (centerDisplay === 'logo') {
+        if (finalHouseLogo && shouldPrintHouse) {
+          centerContent = `<img src="${finalHouseLogo}" alt="House Logo" style="object-fit: contain !important; width: 80%; height: 80%; margin: 10%; background: transparent !important;">`;
+        } else if (finalLogo) {
+          centerContent = `<img src="${finalLogo}" alt="College Crest" style="object-fit: contain !important; width: 80%; height: 80%; margin: 10%; background: transparent !important;">`;
+        } else {
+          centerContent = `<div style="font-size:2rem;color:#c9a054">🎓</div>`;
+        }
+      }
+
+      const centerSectionHtml = (centerDisplay !== 'none') ? `
+        <div class="cert-middle-section">
+          <div class="cert-photo-frame" style="border-color: ${shouldPrintHouse ? houseColor : '#c9a054'} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
+            ${centerContent}
+          </div>
+        </div>
+      ` : '<div style="margin-top:0.5rem"></div>';
+
+      return `
+        <div class="cert-page-break">
+          <div class="${cardClasses}" style="${cardStyles}">
+            ${showWatermark && finalLogo ? `<div class="cert-watermark" style="background-image: url('${finalLogo}')"></div>` : ''}
+
+            ${!hideBorders ? `
+              <svg class="cert-corner top-left" viewBox="0 0 100 100" width="32" height="32"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+              <svg class="cert-corner top-right" viewBox="0 0 100 100" width="32" height="32" style="transform: scaleX(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+              <svg class="cert-corner bottom-left" viewBox="0 0 100 100" width="32" height="32" style="transform: scaleY(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+              <svg class="cert-corner bottom-right" viewBox="0 0 100 100" width="32" height="32" style="transform: scale(-1);"><path d="M 0 0 L 0 30 L 2 30 L 2 2 L 30 2 L 30 0 Z M 6 6 L 6 22 L 8 22 L 8 8 L 22 8 L 22 6 Z" fill="#c9a054"/></svg>
+            ` : ''}
+
+            <div class="cert-header">
+              <div class="cert-header-side">
+                ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
+              </div>
+              <div class="cert-header-title">
+                <h2>${s.CollegeName || 'DON BOSCO COLLEGE OF ARTS AND SCIENCE'}</h2>
+                <div class="cert-college-place">THIRUKAZHUKUNDRAM</div>
+              </div>
+              <div class="cert-header-side">
+                ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
+              </div>
+            </div>
+
+            <div class="cert-event-block">
+              <div class="cert-event-title">${progName}</div>
+              <div class="cert-award-text">${awardTitle}</div>
+            </div>
+            
+            ${centerSectionHtml}
+
+            <div class="cert-name-banner">${r.StudentName}</div>
+
+            <div class="cert-body">
+              <div class="cert-certify">This is to certify that the above mentioned student of</div>
+              ${r.Department ? `<div class="cert-dept-line">${r.Department} Department</div>` : ''}
+              ${shouldPrintHouse ? `<div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>` : ''}
+              <div class="cert-achievement-line">has secured <strong>${posText}</strong> in <strong>"${r.EventName}"</strong></div>
+            </div>
+
+            <div class="cert-prestigious-wording">
+              ${prestigiousWording}
+            </div>
+
+            <div class="cert-footer">
+              <div class="cert-sig-block">
+                <div class="cert-sig-name-cursive">&nbsp;</div>
+                <div class="cert-sig-line">Secretary</div>
+                <div class="cert-sig-sub">${s.CollegeName || ''}</div>
+              </div>
+              <div class="cert-sig-block">
+                <div class="cert-sig-name-cursive">&nbsp;</div>
+                <div class="cert-sig-line">Principal</div>
+                <div class="cert-sig-sub">${s.CollegeName || ''}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function waitForImages(container) {
+      const imgs = Array.from(container.getElementsByTagName('img'));
+      const promises = imgs.map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
+        });
+      });
+      return Promise.all(promises);
+    }
+
+    async function printSingleAnnualCertificate(winner) {
+      const s = await getSettings();
+      toast('Preparing Annual Day certificate...', 'info');
+      document.body.classList.add('printing-certificates');
+      const printArea = document.getElementById('annual-cert-print-area');
+      printArea.innerHTML = await renderAnnualCertificateHTML(winner, s);
+      
+      await waitForImages(printArea);
+      setTimeout(() => {
+        window.print();
+        document.body.classList.remove('printing-certificates');
+        printArea.innerHTML = '';
+      }, 150);
+    }
+
+    async function printAllAnnualCertificates() {
+      const dept = (document.getElementById('annual-cert-filter-dept')?.value || '').toLowerCase();
+      const award = (document.getElementById('annual-cert-filter-award')?.value || '').toLowerCase();
+      let filtered = annualResultsData;
+      if (dept) filtered = filtered.filter(r => (r.Department || '').toLowerCase() === dept);
+      if (award) filtered = filtered.filter(r => (r.EventName || '').toLowerCase() === award);
+      
+      if (!filtered.length) {
+        toast('No awardees found to print certificates.', 'error');
+        return;
+      }
+      
+      const s = await getSettings();
+      toast(`Preparing ${filtered.length} Annual Day certificates...`, 'info');
+      
+      document.body.classList.add('printing-certificates');
+      const printArea = document.getElementById('annual-cert-print-area');
+      printArea.innerHTML = '';
+      
+      let html = '';
+      for (const winner of filtered) {
+        html += await renderAnnualCertificateHTML(winner, s);
+      }
+      printArea.innerHTML = html;
+      
+      await waitForImages(printArea);
+      setTimeout(() => {
+        window.print();
+        document.body.classList.remove('printing-certificates');
+        printArea.innerHTML = '';
+      }, 250);
+    }
+  </script>
+</body>
+</html>
