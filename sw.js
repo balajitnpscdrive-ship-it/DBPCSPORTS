@@ -2,10 +2,11 @@
 // sw.js – PWA Service Worker | G.O.A.T.S Championship Portal
 // ============================================================
 
-const CACHE_NAME = 'goats-portal-v8';
+const CACHE_NAME = 'goats-portal-v12';
 const ASSETS = [
   './',
   './student_portal.html',
+  './annual_day_certificates.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
