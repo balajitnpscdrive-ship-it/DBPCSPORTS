@@ -45,7 +45,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxwb3VZ9ba5x6RmDQwfIXDoPxymVrse697nD5i9PgcEP7e-30oTES4AwH2idALAQL-yqw/exec";
+const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbz1u0n8GMn_UQ29Iva17OWH6J1mWLUFS7jX0w3WeGcZEcXjWbc-3Dr-DwNlqKVJHsnwzw/exec";
 
 function getGasUrl() {
   let u = '';
@@ -123,17 +123,17 @@ async function apiUpload(action, payload = {}) {
 }
 
 // ── Google Drive Thumbnail Converter ───────────────────────────────────────────
-function getGoogleDriveThumbUrl(url) {
+function getGoogleDriveThumbUrl(url, size = 600) {
   if (!url) return '';
   const dRegex = /\/d\/([a-zA-Z0-9_-]+)/;
   const dMatch = url.match(dRegex);
   if (dMatch && dMatch[1]) {
-    return `https://drive.google.com/thumbnail?id=${dMatch[1]}&sz=w600`;
+    return `https://drive.google.com/thumbnail?id=${dMatch[1]}&sz=w${size}`;
   }
   const idRegex = /[?&]id=([a-zA-Z0-9_-]+)/;
   const idMatch = url.match(idRegex);
   if (idMatch && idMatch[1]) {
-    return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w600`;
+    return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w${size}`;
   }
   return url;
 }
@@ -303,6 +303,9 @@ function fileToBase64(file) {
 
 async function imgToDataUrl(src) {
   if (!src) return '';
+  if (src.includes('drive.google.com') || src.includes('googleusercontent.com')) {
+    return ''; // Skip CORS fetch for Google Drive as it will fail anyway and slow down loading
+  }
   try {
     const res = await fetch(src);
     const blob = await res.blob();
@@ -343,8 +346,14 @@ function initNav() {
       if (backdrop) backdrop.classList.add('hidden');
     });
   });
-  const first = document.querySelector('.nav-item[data-section]');
-  if (first) first.click();
+  const hashSec = location.hash ? location.hash.replace('#', '') : null;
+  const targetItem = hashSec ? document.querySelector(`.nav-item[data-section="${hashSec}"]`) : null;
+  if (targetItem) {
+    targetItem.click();
+  } else {
+    const first = document.querySelector('.nav-item[data-section]');
+    if (first) first.click();
+  }
 }
 
 function toggleMobileSidebar() {
