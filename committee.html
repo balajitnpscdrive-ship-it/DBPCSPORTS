@@ -457,6 +457,35 @@
             <label>Prestigious Wording Text</label>
             <textarea id="s-prestigious-wording" rows="4" style="width:100%; padding:0.6rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:inherit; font-size:0.85rem; resize:vertical; line-height:1.4;"></textarea>
           </div>
+          <div class="form-group">
+            <label>Header Logo &amp; Founder Size</label>
+            <select id="s-logo-size">
+              <option value="compact">Compact (65px - Subtle)</option>
+              <option value="normal" selected>Standard (88px - Default)</option>
+              <option value="large">Large (110px - Prominent)</option>
+              <option value="xlarge">Extra Large (130px)</option>
+              <option value="grand">Grand / Majestic (150px)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Center Photo / Medallion Size</label>
+            <select id="s-photo-size">
+              <option value="compact">Compact (160px - Petite)</option>
+              <option value="medium">Medium (195px)</option>
+              <option value="normal" selected>Standard (230px - Recommended)</option>
+              <option value="large">Large (265px - Hero Portrait)</option>
+              <option value="xlarge">Extra Large (300px - Maximum Focus)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Full Certificate Text Spacing</label>
+            <select id="s-text-spacing">
+              <option value="compact">Tight / Compact (Best for Long Text)</option>
+              <option value="normal" selected>Balanced / Standard (Recommended)</option>
+              <option value="spacious">Relaxed &amp; Spacious (Breathing Room)</option>
+              <option value="expanded">Expanded / Luxury Spacing</option>
+            </select>
+          </div>
           <button class="btn btn-primary w-full mt-1" onclick="saveCertificateSettings()">💾 Save Certificate Settings</button>
         </div>
       </div>
@@ -758,6 +787,44 @@
                   <option value="wording">Italicize Prestigious Wording &amp; Certification Line</option>
                   <option value="all">Italicize Body Text &amp; Achievement</option>
                   <option value="none">Straight Non-Italic Roman Text</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Sizes & Text Spacing Controls -->
+          <div style="margin-top:0.8rem; padding-top:0.8rem; border-top:1px dashed var(--glass-border);">
+            <h4 style="margin:0 0 0.6rem 0; font-size:0.88rem; color:#ffd700; display:flex; align-items:center; gap:0.4rem;">
+              <span>📐</span> Image Sizes &amp; Full Text Spacing Adjustments
+            </h4>
+            <div class="grid-3">
+              <div class="form-group">
+                <label>Header Logo &amp; Founder Size</label>
+                <select id="annual-cert-logo-size" onchange="refreshAnnualCertPreview()">
+                  <option value="compact">Compact (65px - Subtle)</option>
+                  <option value="normal" selected>Standard (88px - Default)</option>
+                  <option value="large">Large (110px - Prominent)</option>
+                  <option value="xlarge">Extra Large (130px)</option>
+                  <option value="grand">Grand / Majestic (150px)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Center Student Photo / Crest Size</label>
+                <select id="annual-cert-photo-size" onchange="refreshAnnualCertPreview()">
+                  <option value="compact">Compact (160px - Petite)</option>
+                  <option value="medium">Medium (195px)</option>
+                  <option value="normal" selected>Standard (230px - Recommended)</option>
+                  <option value="large">Large (265px - Hero Portrait)</option>
+                  <option value="xlarge">Extra Large (300px - Maximum Focus)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Full Certificate Text Spacing</label>
+                <select id="annual-cert-text-spacing" onchange="refreshAnnualCertPreview()">
+                  <option value="compact">Tight / Compact (Best for Long Text)</option>
+                  <option value="normal" selected>Balanced / Standard (Recommended)</option>
+                  <option value="spacious">Relaxed &amp; Spacious (Breathing Room)</option>
+                  <option value="expanded">Expanded / Luxury Spacing</option>
                 </select>
               </div>
             </div>
@@ -1653,6 +1720,9 @@ async function loadSettings() {
   document.getElementById('s-cert-program-name').value = s.EventTitle || '';
   document.getElementById('s-show-watermark').value = s.ShowWatermark || 'Yes';
   document.getElementById('s-cert-center-display').value = s.CertCenterDisplay || 'logo';
+  if (document.getElementById('s-logo-size')) document.getElementById('s-logo-size').value = s.HeaderLogoSize || 'normal';
+  if (document.getElementById('s-photo-size')) document.getElementById('s-photo-size').value = s.CenterPhotoSize || 'normal';
+  if (document.getElementById('s-text-spacing')) document.getElementById('s-text-spacing').value = s.CertTextSpacing || 'normal';
   const wordingVal = s.PrestigiousWording || "In recognition of outstanding performance, dedication, and exemplary achievement displayed during the event.";
   document.getElementById('s-prestigious-wording').value = wordingVal;
   
@@ -1739,6 +1809,15 @@ async function loadSettings() {
 
   const annualItalic = document.getElementById('annual-cert-italic');
   if (annualItalic) annualItalic.value = s.AnnualDayItalic || 'wording';
+
+  const annualLogoSize = document.getElementById('annual-cert-logo-size');
+  if (annualLogoSize) annualLogoSize.value = s.AnnualDayLogoSize || s.HeaderLogoSize || 'normal';
+
+  const annualPhotoSize = document.getElementById('annual-cert-photo-size');
+  if (annualPhotoSize) annualPhotoSize.value = s.AnnualDayPhotoSize || s.CenterPhotoSize || 'normal';
+
+  const annualTextSpacing = document.getElementById('annual-cert-text-spacing');
+  if (annualTextSpacing) annualTextSpacing.value = s.AnnualDayTextSpacing || s.CertTextSpacing || 'normal';
 
   // Load Annual Day Background preview if present in settings
   if (s.AnnualDayBgUrl && !_localAnnualBgDataUrl) {
@@ -1882,6 +1961,9 @@ async function saveCertificateSettings() {
   const showWatermark = document.getElementById('s-show-watermark').value;
   const certCenterDisplay = document.getElementById('s-cert-center-display').value;
   const prestigiousWording = document.getElementById('s-prestigious-wording').value;
+  const logoSize = document.getElementById('s-logo-size')?.value || 'normal';
+  const photoSize = document.getElementById('s-photo-size')?.value || 'normal';
+  const textSpacing = document.getElementById('s-text-spacing')?.value || 'normal';
 
   const btn = document.querySelector('[onclick="saveCertificateSettings()"]');
   if (btn) btn.disabled = true;
@@ -1892,6 +1974,9 @@ async function saveCertificateSettings() {
     await apiPost('saveSetting', { Key: 'ShowWatermark', Value: showWatermark });
     await apiPost('saveSetting', { Key: 'CertCenterDisplay', Value: certCenterDisplay });
     await apiPost('saveSetting', { Key: 'PrestigiousWording', Value: prestigiousWording });
+    await apiPost('saveSetting', { Key: 'HeaderLogoSize', Value: logoSize });
+    await apiPost('saveSetting', { Key: 'CenterPhotoSize', Value: photoSize });
+    await apiPost('saveSetting', { Key: 'CertTextSpacing', Value: textSpacing });
     _settings = null; // bust cache
     
     // Sync the other input field in case the user switches views
@@ -2391,9 +2476,13 @@ async function renderCertificateHTML(r, s) {
     }
   }
 
+  const logoSize = s.HeaderLogoSize || s.AnnualDayLogoSize || 'normal';
+  const photoSize = s.CenterPhotoSize || s.AnnualDayPhotoSize || 'normal';
+  const textSpacing = s.CertTextSpacing || s.AnnualDayTextSpacing || 'normal';
+
   return `
     <div class="cert-page-break">
-      <div class="cert-card">
+      <div class="cert-card spacing-${textSpacing}">
         ${showWatermark && finalLogo ? `<div class="cert-watermark" style="background-image: url('${finalLogo}')"></div>` : ''}
         
         <!-- Vector Ornamental Corners -->
@@ -2404,13 +2493,13 @@ async function renderCertificateHTML(r, s) {
 
         <!-- Header: Logo | College Name (2 lines bold) | Founder -->
         <div class="cert-header">
-          <div class="cert-header-side">
+          <div class="cert-header-side logo-size-${logoSize}">
             ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
           </div>
           <div class="cert-header-title">
             ${formatCollegeNameHTML(s)}
           </div>
-          <div class="cert-header-side">
+          <div class="cert-header-side logo-size-${logoSize}">
             ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
           </div>
         </div>
@@ -2423,7 +2512,7 @@ async function renderCertificateHTML(r, s) {
         
         <!-- House Logo or Student Photo -->
         <div class="cert-middle-section">
-          <div class="cert-photo-frame" style="border-color: ${houseColor} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
+          <div class="cert-photo-frame photo-size-${photoSize}" style="border-color: ${houseColor} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
             ${centerContent}
           </div>
         </div>
@@ -2454,12 +2543,10 @@ async function renderCertificateHTML(r, s) {
           <div class="cert-sig-block">
             <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Secretary</div>
-            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
           </div>
           <div class="cert-sig-block">
             <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Principal</div>
-            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
           </div>
         </div>
       </div>
@@ -3203,6 +3290,9 @@ async function saveAnnualDaySettings() {
     const underline = document.getElementById('annual-cert-underline')?.value || 'none';
     const bold = document.getElementById('annual-cert-bold')?.value || 'name_title';
     const italic = document.getElementById('annual-cert-italic')?.value || 'wording';
+    const logoSize = document.getElementById('annual-cert-logo-size')?.value || 'normal';
+    const photoSize = document.getElementById('annual-cert-photo-size')?.value || 'normal';
+    const textSpacing = document.getElementById('annual-cert-text-spacing')?.value || 'normal';
 
     await apiPost('saveSetting', { Key: 'AnnualDayTextColor', Value: textColor });
     await apiPost('saveSetting', { Key: 'AnnualDayNameColor', Value: nameColor });
@@ -3212,6 +3302,9 @@ async function saveAnnualDaySettings() {
     await apiPost('saveSetting', { Key: 'AnnualDayUnderline', Value: underline });
     await apiPost('saveSetting', { Key: 'AnnualDayBold', Value: bold });
     await apiPost('saveSetting', { Key: 'AnnualDayItalic', Value: italic });
+    await apiPost('saveSetting', { Key: 'AnnualDayLogoSize', Value: logoSize });
+    await apiPost('saveSetting', { Key: 'AnnualDayPhotoSize', Value: photoSize });
+    await apiPost('saveSetting', { Key: 'AnnualDayTextSpacing', Value: textSpacing });
 
     if (_localAnnualBgDataUrl) {
       if (_localAnnualBgDataUrl.startsWith('data:image/')) {
@@ -3291,7 +3384,11 @@ async function renderAnnualCertificateHTML(r, s) {
   const boldStyle = document.getElementById('annual-cert-bold')?.value || s.AnnualDayBold || 'name_title';
   const italicStyle = document.getElementById('annual-cert-italic')?.value || s.AnnualDayItalic || 'wording';
 
-  let cardClasses = 'cert-card';
+  const logoSize = document.getElementById('annual-cert-logo-size')?.value || s.AnnualDayLogoSize || s.HeaderLogoSize || 'normal';
+  const photoSize = document.getElementById('annual-cert-photo-size')?.value || s.AnnualDayPhotoSize || s.CenterPhotoSize || 'normal';
+  const textSpacing = document.getElementById('annual-cert-text-spacing')?.value || s.AnnualDayTextSpacing || s.CertTextSpacing || 'normal';
+
+  let cardClasses = `cert-card spacing-${textSpacing}`;
   if (fontScale === 'compact') cardClasses += ' scale-compact';
   else if (fontScale === 'large') cardClasses += ' scale-large';
   else if (fontScale === 'xlarge') cardClasses += ' scale-xlarge';
@@ -3419,7 +3516,7 @@ async function renderAnnualCertificateHTML(r, s) {
 
   const centerSectionHtml = (centerDisplay !== 'none') ? `
     <div class="cert-middle-section">
-      <div class="cert-photo-frame" style="border-color: ${shouldPrintHouse ? houseColor : '#c9a054'} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
+      <div class="cert-photo-frame photo-size-${photoSize}" style="border-color: ${shouldPrintHouse ? houseColor : '#c9a054'} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
         ${centerContent}
       </div>
     </div>
@@ -3441,13 +3538,13 @@ async function renderAnnualCertificateHTML(r, s) {
 
         <!-- Header: Logo | College Name (2 lines bold) | Founder -->
         <div class="cert-header">
-          <div class="cert-header-side">
+          <div class="cert-header-side logo-size-${logoSize}">
             ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
           </div>
           <div class="cert-header-title">
             ${formatCollegeNameHTML(s)}
           </div>
-          <div class="cert-header-side">
+          <div class="cert-header-side logo-size-${logoSize}">
             ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
           </div>
         </div>
@@ -3482,12 +3579,10 @@ async function renderAnnualCertificateHTML(r, s) {
           <div class="cert-sig-block">
             <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Secretary</div>
-            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
           </div>
           <div class="cert-sig-block">
             <div class="cert-sig-name-cursive">&nbsp;</div>
             <div class="cert-sig-line">Principal</div>
-            <div class="cert-sig-sub">${s.CollegeName || ''}</div>
           </div>
         </div>
       </div>
