@@ -22,7 +22,11 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 
 body {
   font-family: 'Inter', sans-serif;
@@ -30,6 +34,8 @@ body {
   color: var(--text);
   min-height: 100vh;
   line-height: 1.6;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* ── Scrollbar ────────────────────────────────────── */
@@ -170,7 +176,9 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   padding: 1.5rem 2rem 3rem 2rem;
   min-width: 0;
   max-width: calc(100vw - 220px);
+  width: calc(100vw - 220px);
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .section-page {
@@ -829,6 +837,27 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   object-fit: cover;
 }
 
+/* ── Logo & Founder Size Variations ───────────────── */
+.cert-header-side.logo-size-compact { width: 65px; }
+.cert-header-side.logo-size-compact .cert-logo,
+.cert-header-side.logo-size-compact .cert-founder-wrap { width: 65px; height: 65px; }
+
+.cert-header-side.logo-size-normal { width: 88px; }
+.cert-header-side.logo-size-normal .cert-logo,
+.cert-header-side.logo-size-normal .cert-founder-wrap { width: 88px; height: 88px; }
+
+.cert-header-side.logo-size-large { width: 110px; }
+.cert-header-side.logo-size-large .cert-logo,
+.cert-header-side.logo-size-large .cert-founder-wrap { width: 110px; height: 110px; }
+
+.cert-header-side.logo-size-xlarge { width: 130px; }
+.cert-header-side.logo-size-xlarge .cert-logo,
+.cert-header-side.logo-size-xlarge .cert-founder-wrap { width: 130px; height: 130px; }
+
+.cert-header-side.logo-size-grand { width: 150px; }
+.cert-header-side.logo-size-grand .cert-logo,
+.cert-header-side.logo-size-grand .cert-founder-wrap { width: 150px; height: 150px; }
+
 .cert-header-title {
   flex: 1;
   min-width: 0;
@@ -1068,6 +1097,42 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   print-color-adjust: exact !important;
 }
 
+/* ── Center Photo / Medallion Size Variations ────── */
+.cert-photo-frame.photo-size-compact { width: 160px; height: 160px; }
+.cert-photo-frame.photo-size-medium { width: 195px; height: 195px; }
+.cert-photo-frame.photo-size-normal { width: 230px; height: 230px; }
+.cert-photo-frame.photo-size-large { width: 265px; height: 265px; }
+.cert-photo-frame.photo-size-xlarge { width: 300px; height: 300px; }
+
+/* ── Certificate Full Text & Vertical Spacing ─────── */
+.cert-card.spacing-compact .cert-event-block { margin: 0.15rem 0; }
+.cert-card.spacing-compact .cert-middle-section { margin: 0.1rem 0; }
+.cert-card.spacing-compact .cert-name-banner { margin: 0.15rem auto; }
+.cert-card.spacing-compact .cert-body { margin: 0.15rem 0; line-height: 1.3; }
+.cert-card.spacing-compact .cert-prestigious-wording { margin: 0.2rem auto 0; line-height: 1.35; padding-top: 0.25rem; }
+.cert-card.spacing-compact .cert-footer { margin-top: 0.5rem; }
+
+.cert-card.spacing-normal .cert-event-block { margin: 0.45rem 0; }
+.cert-card.spacing-normal .cert-middle-section { margin: 0.3rem 0; }
+.cert-card.spacing-normal .cert-name-banner { margin: 0.35rem auto; }
+.cert-card.spacing-normal .cert-body { margin: 0.4rem 0; line-height: 1.5; }
+.cert-card.spacing-normal .cert-prestigious-wording { margin: 0.4rem auto 0; line-height: 1.6; padding-top: 0.5rem; }
+.cert-card.spacing-normal .cert-footer { margin-top: 1rem; }
+
+.cert-card.spacing-spacious .cert-event-block { margin: 0.75rem 0; }
+.cert-card.spacing-spacious .cert-middle-section { margin: 0.55rem 0; }
+.cert-card.spacing-spacious .cert-name-banner { margin: 0.65rem auto; }
+.cert-card.spacing-spacious .cert-body { margin: 0.65rem 0; line-height: 1.75; }
+.cert-card.spacing-spacious .cert-prestigious-wording { margin: 0.65rem auto 0; line-height: 1.85; padding-top: 0.7rem; }
+.cert-card.spacing-spacious .cert-footer { margin-top: 1.4rem; }
+
+.cert-card.spacing-expanded .cert-event-block { margin: 1rem 0; }
+.cert-card.spacing-expanded .cert-middle-section { margin: 0.8rem 0; }
+.cert-card.spacing-expanded .cert-name-banner { margin: 0.9rem auto; }
+.cert-card.spacing-expanded .cert-body { margin: 0.9rem 0; line-height: 2; }
+.cert-card.spacing-expanded .cert-prestigious-wording { margin: 0.9rem auto 0; line-height: 2.1; padding-top: 0.9rem; }
+.cert-card.spacing-expanded .cert-footer { margin-top: 1.8rem; }
+
 /* Colorful department name styling */
 .cert-dept-highlight {
   color: #4338ca !important; /* Rich indigo - prestigious department color */
@@ -1151,14 +1216,9 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
   letter-spacing: 1.2px;
 }
 
-/* College name sub-label below signature role */
+/* College name sub-label below signature role (Removed per user request) */
 .cert-sig-sub {
-  font-size: 0.68rem;
-  color: #555;
-  font-style: italic;
-  margin-top: 0.2rem;
-  text-align: center;
-  max-width: 180px;
+  display: none !important;
 }
 
 .cert-date-block {
@@ -1220,13 +1280,27 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     height: auto !important; /* Allow growing */
   }
   
-  body.printing-certificates #sec-certificates,
-  body.printing-certificates #sec-annual-certificates {
+  body.printing-certificates #sec-certificates.hidden,
+  body.printing-certificates #sec-annual-certificates.hidden,
+  body.printing-certificates .section-page.hidden {
+    display: none !important;
+  }
+
+  body.printing-certificates #sec-certificates:not(.hidden),
+  body.printing-certificates #sec-annual-certificates:not(.hidden) {
     display: block !important;
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
     height: auto !important; /* Allow growing */
+  }
+
+  #cert-print-area:empty,
+  #annual-cert-print-area:empty {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Suppress everything except the actual certificate print areas */
@@ -1240,8 +1314,8 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     display: none !important;
   }
 
-  body.printing-certificates #cert-print-area,
-  body.printing-certificates #annual-cert-print-area {
+  body.printing-certificates #cert-print-area:not(:empty),
+  body.printing-certificates #annual-cert-print-area:not(:empty) {
     display: block !important;
     width: 100% !important;
     margin: 0 !important;
@@ -1264,11 +1338,17 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     display: block !important;
     width: 210mm !important;
     height: 297mm !important;
+    max-height: 297mm !important;
     box-sizing: border-box !important;
     padding: 6mm !important; /* Very tight outer page padding - maximize cert canvas */
     background: #fff !important;
     position: relative !important;
     overflow: hidden !important; /* Prevent vertical overflow blank pages */
+  }
+
+  .cert-page-break:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
   .cert-page-break .cert-card {
@@ -1448,5 +1528,66 @@ tbody tr:hover { background: hsla(255,100%,100%,.03); }
     justify-content: space-between !important;
     align-items: flex-end !important;
     width: 100% !important;
+  }
+
+  /* Print Logo & Founder sizes */
+  .cert-page-break .cert-header-side.logo-size-compact { width: 65px !important; }
+  .cert-page-break .cert-header-side.logo-size-compact .cert-logo,
+  .cert-page-break .cert-header-side.logo-size-compact .cert-founder-wrap { width: 65px !important; height: 65px !important; }
+
+  .cert-page-break .cert-header-side.logo-size-normal { width: 88px !important; }
+  .cert-page-break .cert-header-side.logo-size-normal .cert-logo,
+  .cert-page-break .cert-header-side.logo-size-normal .cert-founder-wrap { width: 88px !important; height: 88px !important; }
+
+  .cert-page-break .cert-header-side.logo-size-large { width: 110px !important; }
+  .cert-page-break .cert-header-side.logo-size-large .cert-logo,
+  .cert-page-break .cert-header-side.logo-size-large .cert-founder-wrap { width: 110px !important; height: 110px !important; }
+
+  .cert-page-break .cert-header-side.logo-size-xlarge { width: 130px !important; }
+  .cert-page-break .cert-header-side.logo-size-xlarge .cert-logo,
+  .cert-page-break .cert-header-side.logo-size-xlarge .cert-founder-wrap { width: 130px !important; height: 130px !important; }
+
+  .cert-page-break .cert-header-side.logo-size-grand { width: 150px !important; }
+  .cert-page-break .cert-header-side.logo-size-grand .cert-logo,
+  .cert-page-break .cert-header-side.logo-size-grand .cert-founder-wrap { width: 150px !important; height: 150px !important; }
+
+  /* Print Center Photo sizes */
+  .cert-page-break .cert-photo-frame.photo-size-compact { width: 160px !important; height: 160px !important; }
+  .cert-page-break .cert-photo-frame.photo-size-medium { width: 195px !important; height: 195px !important; }
+  .cert-page-break .cert-photo-frame.photo-size-normal { width: 230px !important; height: 230px !important; }
+  .cert-page-break .cert-photo-frame.photo-size-large { width: 265px !important; height: 265px !important; }
+  .cert-page-break .cert-photo-frame.photo-size-xlarge { width: 300px !important; height: 300px !important; }
+
+  /* Print Content Spacing */
+  .cert-page-break .cert-card.spacing-compact .cert-event-block { margin: 0.15rem 0 !important; }
+  .cert-page-break .cert-card.spacing-compact .cert-middle-section { margin: 0.1rem 0 !important; }
+  .cert-page-break .cert-card.spacing-compact .cert-name-banner { margin: 0.15rem auto !important; }
+  .cert-page-break .cert-card.spacing-compact .cert-body { margin: 0.15rem 0 !important; line-height: 1.3 !important; }
+  .cert-page-break .cert-card.spacing-compact .cert-prestigious-wording { margin: 0.2rem auto 0 !important; line-height: 1.35 !important; padding-top: 0.25rem !important; }
+  .cert-page-break .cert-card.spacing-compact .cert-footer { margin-top: 0.5rem !important; }
+
+  .cert-page-break .cert-card.spacing-normal .cert-event-block { margin: 0.45rem 0 !important; }
+  .cert-page-break .cert-card.spacing-normal .cert-middle-section { margin: 0.3rem 0 !important; }
+  .cert-page-break .cert-card.spacing-normal .cert-name-banner { margin: 0.35rem auto !important; }
+  .cert-page-break .cert-card.spacing-normal .cert-body { margin: 0.4rem 0 !important; line-height: 1.5 !important; }
+  .cert-page-break .cert-card.spacing-normal .cert-prestigious-wording { margin: 0.4rem auto 0 !important; line-height: 1.6 !important; padding-top: 0.5rem !important; }
+  .cert-page-break .cert-card.spacing-normal .cert-footer { margin-top: 1rem !important; }
+
+  .cert-page-break .cert-card.spacing-spacious .cert-event-block { margin: 0.75rem 0 !important; }
+  .cert-page-break .cert-card.spacing-spacious .cert-middle-section { margin: 0.55rem 0 !important; }
+  .cert-page-break .cert-card.spacing-spacious .cert-name-banner { margin: 0.65rem auto !important; }
+  .cert-page-break .cert-card.spacing-spacious .cert-body { margin: 0.65rem 0 !important; line-height: 1.75 !important; }
+  .cert-page-break .cert-card.spacing-spacious .cert-prestigious-wording { margin: 0.65rem auto 0 !important; line-height: 1.85 !important; padding-top: 0.7rem !important; }
+  .cert-page-break .cert-card.spacing-spacious .cert-footer { margin-top: 1.4rem !important; }
+
+  .cert-page-break .cert-card.spacing-expanded .cert-event-block { margin: 1rem 0 !important; }
+  .cert-page-break .cert-card.spacing-expanded .cert-middle-section { margin: 0.8rem 0 !important; }
+  .cert-page-break .cert-card.spacing-expanded .cert-name-banner { margin: 0.9rem auto !important; }
+  .cert-page-break .cert-card.spacing-expanded .cert-body { margin: 0.9rem 0 !important; line-height: 2 !important; }
+  .cert-page-break .cert-card.spacing-expanded .cert-prestigious-wording { margin: 0.9rem auto 0 !important; line-height: 2.1 !important; padding-top: 0.9rem !important; }
+  .cert-page-break .cert-card.spacing-expanded .cert-footer { margin-top: 1.8rem !important; }
+
+  .cert-page-break .cert-sig-sub {
+    display: none !important;
   }
 }
