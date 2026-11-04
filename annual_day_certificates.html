@@ -328,6 +328,38 @@
             <option value="none">Straight Non-Italic Roman Text</option>
           </select>
         </div>
+
+        <div class="form-group">
+          <label>Header Logo &amp; Founder Size</label>
+          <select id="annual-cert-logo-size" onchange="refreshAnnualCertPreview()">
+            <option value="compact">Compact (65px - Subtle)</option>
+            <option value="normal" selected>Standard (88px - Default)</option>
+            <option value="large">Large (110px - Prominent)</option>
+            <option value="xlarge">Extra Large (130px)</option>
+            <option value="grand">Grand / Majestic (150px)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Center Photo / Crest Size</label>
+          <select id="annual-cert-photo-size" onchange="refreshAnnualCertPreview()">
+            <option value="compact">Compact (160px)</option>
+            <option value="medium">Medium (195px)</option>
+            <option value="normal" selected>Standard (230px - Default)</option>
+            <option value="large">Large (265px)</option>
+            <option value="xlarge">Extra Large (300px - Maximum Prominence)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Full Text &amp; Vertical Spacing</label>
+          <select id="annual-cert-text-spacing" onchange="refreshAnnualCertPreview()">
+            <option value="compact">Tight / Compact (Best for long descriptions)</option>
+            <option value="normal" selected>Balanced / Standard (Recommended)</option>
+            <option value="spacious">Relaxed / Spacious</option>
+            <option value="expanded">Expanded / Airy (Maximum vertical distribution)</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -501,6 +533,9 @@
         if (s.AnnualDayUnderline) document.getElementById('annual-cert-underline').value = s.AnnualDayUnderline;
         if (s.AnnualDayBold) document.getElementById('annual-cert-bold').value = s.AnnualDayBold;
         if (s.AnnualDayItalic) document.getElementById('annual-cert-italic').value = s.AnnualDayItalic;
+        if (s.AnnualDayLogoSize) document.getElementById('annual-cert-logo-size').value = s.AnnualDayLogoSize;
+        if (s.AnnualDayPhotoSize) document.getElementById('annual-cert-photo-size').value = s.AnnualDayPhotoSize;
+        if (s.AnnualDayTextSpacing) document.getElementById('annual-cert-text-spacing').value = s.AnnualDayTextSpacing;
       } catch(err) {
         console.warn('Backend not linked yet, running in standalone mode:', err);
       }
@@ -1225,6 +1260,9 @@
         const underline = document.getElementById('annual-cert-underline')?.value || 'none';
         const bold = document.getElementById('annual-cert-bold')?.value || 'name_title';
         const italic = document.getElementById('annual-cert-italic')?.value || 'wording';
+        const logoSize = document.getElementById('annual-cert-logo-size')?.value || 'normal';
+        const photoSize = document.getElementById('annual-cert-photo-size')?.value || 'normal';
+        const textSpacing = document.getElementById('annual-cert-text-spacing')?.value || 'normal';
 
         await apiPost('saveSetting', { Key: 'AnnualDayTextColor', Value: textColor });
         await apiPost('saveSetting', { Key: 'AnnualDayNameColor', Value: nameColor });
@@ -1234,6 +1272,9 @@
         await apiPost('saveSetting', { Key: 'AnnualDayUnderline', Value: underline });
         await apiPost('saveSetting', { Key: 'AnnualDayBold', Value: bold });
         await apiPost('saveSetting', { Key: 'AnnualDayItalic', Value: italic });
+        await apiPost('saveSetting', { Key: 'AnnualDayLogoSize', Value: logoSize });
+        await apiPost('saveSetting', { Key: 'AnnualDayPhotoSize', Value: photoSize });
+        await apiPost('saveSetting', { Key: 'AnnualDayTextSpacing', Value: textSpacing });
 
         if (_localAnnualBgDataUrl) {
           if (_localAnnualBgDataUrl.startsWith('data:image/')) {
@@ -1311,8 +1352,11 @@
       const underlineStyle = document.getElementById('annual-cert-underline')?.value || s.AnnualDayUnderline || 'none';
       const boldStyle = document.getElementById('annual-cert-bold')?.value || s.AnnualDayBold || 'name_title';
       const italicStyle = document.getElementById('annual-cert-italic')?.value || s.AnnualDayItalic || 'wording';
+      const logoSize = document.getElementById('annual-cert-logo-size')?.value || s.AnnualDayLogoSize || s.HeaderLogoSize || 'normal';
+      const photoSize = document.getElementById('annual-cert-photo-size')?.value || s.AnnualDayPhotoSize || s.CenterPhotoSize || 'normal';
+      const textSpacing = document.getElementById('annual-cert-text-spacing')?.value || s.AnnualDayTextSpacing || s.CertTextSpacing || 'normal';
 
-      let cardClasses = 'cert-card';
+      let cardClasses = `cert-card spacing-${textSpacing}`;
       if (fontScale === 'compact') cardClasses += ' scale-compact';
       else if (fontScale === 'large') cardClasses += ' scale-large';
       else if (fontScale === 'xlarge') cardClasses += ' scale-xlarge';
@@ -1434,7 +1478,7 @@
 
       const centerSectionHtml = (centerDisplay !== 'none') ? `
         <div class="cert-middle-section">
-          <div class="cert-photo-frame" style="border-color: ${shouldPrintHouse ? houseColor : '#c9a054'} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
+          <div class="cert-photo-frame photo-size-${photoSize}" style="border-color: ${shouldPrintHouse ? houseColor : '#c9a054'} !important; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
             ${centerContent}
           </div>
         </div>
@@ -1454,14 +1498,14 @@
             ` : ''}
 
             <div class="cert-header">
-              <div class="cert-header-side">
-                ${finalLogo ? `<div class="cert-logo"><img src="${finalLogo}" alt="Logo"></div>` : '<div style="width:88px"></div>'}
+              <div class="cert-header-side logo-size-${logoSize}">
+                ${finalLogo ? `<div class="cert-logo logo-size-${logoSize}"><img src="${finalLogo}" alt="Logo"></div>` : `<div class="logo-size-${logoSize}"></div>`}
               </div>
               <div class="cert-header-title">
                 ${formatCollegeNameHTML(s)}
               </div>
-              <div class="cert-header-side">
-                ${finalFounder ? `<div class="cert-founder-wrap"><img src="${finalFounder}" alt="Founder"></div>` : '<div style="width:88px"></div>'}
+              <div class="cert-header-side logo-size-${logoSize}">
+                ${finalFounder ? `<div class="cert-founder-wrap logo-size-${logoSize}"><img src="${finalFounder}" alt="Founder"></div>` : `<div class="logo-size-${logoSize}"></div>`}
               </div>
             </div>
 
@@ -1489,12 +1533,10 @@
               <div class="cert-sig-block">
                 <div class="cert-sig-name-cursive">&nbsp;</div>
                 <div class="cert-sig-line">Secretary</div>
-                <div class="cert-sig-sub">${s.CollegeName || ''}</div>
               </div>
               <div class="cert-sig-block">
                 <div class="cert-sig-name-cursive">&nbsp;</div>
                 <div class="cert-sig-line">Principal</div>
-                <div class="cert-sig-sub">${s.CollegeName || ''}</div>
               </div>
             </div>
           </div>
