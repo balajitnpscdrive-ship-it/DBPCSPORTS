@@ -2522,14 +2522,12 @@ async function renderCertificateHTML(r, s) {
 
         <!-- Certificate Body -->
         <div class="cert-body">
-          <div class="cert-certify">This is to certify that the above mentioned student of</div>
           ${isTeamResult ? `
-            <div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>
-            <div class="cert-achievement-line">has secured <strong>${posText}</strong> in the event <strong>"${r.EventName}"</strong></div>
+            <div class="cert-certify">This is to certify that <strong>${r.House} House Team</strong> has been awarded <strong>${posText}</strong> in the event <strong>"${r.EventName}"</strong></div>
           ` : `
-            <div class="cert-dept-line">${r.Department} Department</div>
+            <div class="cert-certify">This is to certify that <strong>${r.StudentName}</strong> has been awarded <strong>${posText}</strong> in the Department of <strong>${r.Department}</strong></div>
+            <div class="cert-achievement-line">for the event <strong>"${r.EventName}"</strong></div>
             <div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>
-            <div class="cert-achievement-line">has secured <strong>${posText}</strong> in the event <strong>"${r.EventName}"</strong></div>
           `}
         </div>
 
@@ -2727,9 +2725,7 @@ function renderAnnualCertificatesList(list) {
 // ── Student Photo Studio (Upload & Live Camera Capture) ────────────────────────
 let _currentPhotoStudentIdx = -1;
 let _cameraStream = null;
-let _capturedPhotoDataUrl = '';
-
-function openStudentPhotoModal(idx) {
+let _capturedPhotoDataUrl = '';(idx) {
   _currentPhotoStudentIdx = (typeof idx === 'number' && idx >= 0) ? idx : 0;
   const list = annualResultsData || [];
   if (!list.length) {
@@ -2801,6 +2797,12 @@ function renderStudentPhotoModalContent() {
 
     <!-- Tab 2: Live Camera -->
     <div id="photo-tab-camera" style="display:none;">
+      <!-- Camera facing toggle -->
+      <div style="display:flex; justify-content:flex-end; margin-bottom:0.4rem;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-flip-camera" onclick="flipStudentCamera()" title="Switch between front and back camera" style="display:none; gap:0.3rem; align-items:center;">
+          🔄 <span id="btn-flip-label">Switch to Back Camera</span>
+        </button>
+      </div>
       <div class="camera-stream-box mb-2" id="camera-stream-container">
         <video id="student-camera-video" autoplay playsinline></video>
         <div class="camera-guide-circle"></div>
@@ -2833,30 +2835,53 @@ function renderStudentPhotoModalContent() {
   `;
 }
 
-async function startStudentCamera() {
+// ── Student Photo Studio (Upload & Live Camera Capture) ────────────────────────
+let _currentPhotoStudentIdx = -1;
+let _cameraStream = null;
+let _capturedPhotoDataUrl = '';
+let _cameraFacingMode = 'environment'; // default: back camera on mobile
+
+async function startStudentCamera(facingMode) {
   const video = document.getElementById('student-camera-video');
   if (!video) return;
+  if (facingMode) _cameraFacingMode = facingMode;
   try {
     stopStudentCamera();
     _cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+      video: { facingMode: { ideal: _cameraFacingMode }, width: { ideal: 640 }, height: { ideal: 640 } },
       audio: false
     });
     video.srcObject = _cameraStream;
-    const startBtn = document.getElementById('btn-start-camera');
-    const snapBtn = document.getElementById('btn-snap-camera');
-    const stopBtn = document.getElementById('btn-stop-camera');
+    const startBtn  = document.getElementById('btn-start-camera');
+    const snapBtn   = document.getElementById('btn-snap-camera');
+    const stopBtn   = document.getElementById('btn-stop-camera');
     const retakeBtn = document.getElementById('btn-retake-camera');
-    if (startBtn) startBtn.style.display = 'none';
-    if (snapBtn) snapBtn.style.display = 'inline-flex';
-    if (stopBtn) stopBtn.style.display = 'inline-flex';
+    const flipBtn   = document.getElementById('btn-flip-camera');
+    const flipLabel = document.getElementById('btn-flip-label');
+    if (startBtn)  startBtn.style.display  = 'none';
+    if (snapBtn)   snapBtn.style.display   = 'inline-flex';
+    if (stopBtn)   stopBtn.style.display   = 'inline-flex';
     if (retakeBtn) retakeBtn.style.display = 'none';
+    if (flipBtn)   flipBtn.style.display   = 'inline-flex';
+    if (flipLabel) flipLabel.textContent   = (_cameraFacingMode === 'environment') ? 'Switch to Front Camera' : 'Switch to Back Camera';
     const status = document.getElementById('modal-photo-status');
-    if (status) status.textContent = 'Camera active. Frame face in circle and snap photo.';
+    const facing = (_cameraFacingMode === 'environment') ? 'Back (Rear)' : 'Front (Selfie)';
+    if (status) status.textContent = `📷 ${facing} camera active. Frame face in circle and snap photo.`;
   } catch(err) {
+    if (err.name === 'OverconstrainedError' || err.name === 'NotFoundError') {
+      _cameraFacingMode = (_cameraFacingMode === 'environment') ? 'user' : 'environment';
+      toast('Requested camera not found, switching to available camera…', 'info');
+      await startStudentCamera(_cameraFacingMode);
+      return;
+    }
     console.error('Camera error:', err);
     toast('Camera access error: ' + (err.message || 'Permission denied'), 'error');
   }
+}
+
+async function flipStudentCamera() {
+  _cameraFacingMode = (_cameraFacingMode === 'environment') ? 'user' : 'environment';
+  await startStudentCamera(_cameraFacingMode);
 }
 
 function stopStudentCamera() {
@@ -3553,6 +3578,7 @@ async function renderAnnualCertificateHTML(r, s) {
         <div class="cert-event-block">
           <div class="cert-event-title" style="${eventTitleStyles}">${progName}</div>
           <div class="cert-award-text">${awardTitle}</div>
+          <div class="cert-event-name-line">${r.EventName}</div>
         </div>
         
         <!-- Center Circular Frame (Photo / Medallion / Crest) -->
@@ -3563,10 +3589,9 @@ async function renderAnnualCertificateHTML(r, s) {
 
         <!-- Certificate Body -->
         <div class="cert-body" style="${bodyStyles}">
-          <div class="cert-certify" style="${certifyStyles}">This is to certify that the above mentioned student of</div>
-          ${r.Department ? `<div class="cert-dept-line" style="${bodyStyles}">${r.Department} Department</div>` : ''}
+          <div class="cert-certify" style="${certifyStyles}">This is to certify that <strong>${r.StudentName}</strong> has been awarded <strong>${posText}</strong>${r.Department ? ` in the Department of <strong>${r.Department}</strong>` : ''}</div>
+          <div class="cert-achievement-line" style="${bodyStyles}">for the event <strong>"${r.EventName}"</strong></div>
           ${shouldPrintHouse ? `<div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>` : ''}
-          <div class="cert-achievement-line">has secured <strong>${posText}</strong> in <strong>"${r.EventName}"</strong></div>
         </div>
 
         <!-- Prestigious Wording -->
