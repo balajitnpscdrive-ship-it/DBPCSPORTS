@@ -3565,7 +3565,11 @@ async function renderAnnualCertificateHTML(r, s) {
         <div class="cert-event-block">
           <div class="cert-event-title" style="${eventTitleStyles}">${progName}</div>
           <div class="cert-award-text">${awardTitle}</div>
-          <div class="cert-event-name-line">${r.EventName}</div>
+          <div class="cert-event-name-line">${(() => {
+            let cn = (r.EventName || '').replace(/\s*\((?:[^)]*\b(?:rank|place|prize|winner|runner\s*up|first|second|third|1st|2nd|3rd|4th|5th|position|merit|excellence)\b[^)]*)\)\s*/gi, ' ').replace(/\s*[-–—:]\s*(?:1st|2nd|3rd|first|second|third)\s*(?:rank|place|prize|position)?\s*$/gi, '').trim();
+            if (r.Position) { const ep = String(r.Position).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); cn = cn.replace(new RegExp('\\s*\\(?' + ep + '\\)?\\s*$', 'i'), '').trim(); }
+            return cn || (r.EventName || '');
+          })()}</div>
         </div>
         
         <!-- Center Circular Frame (Photo / Medallion / Crest) -->
