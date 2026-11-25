@@ -3577,7 +3577,6 @@ async function renderAnnualCertificateHTML(r, s) {
         <!-- Certificate Body -->
         <div class="cert-body" style="${bodyStyles}">
           <div class="cert-certify" style="${certifyStyles}">This is to certify that <strong>${r.StudentName}</strong> has been awarded <strong>${posText}</strong>${r.Department ? ` in the Department of <strong>${r.Department}</strong>` : ''}</div>
-          <div class="cert-achievement-line" style="${bodyStyles}">for the event <strong>"${r.EventName}"</strong></div>
           ${shouldPrintHouse ? `<div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>` : ''}
         </div>
 
