@@ -2725,7 +2725,10 @@ function renderAnnualCertificatesList(list) {
 // ── Student Photo Studio (Upload & Live Camera Capture) ────────────────────────
 let _currentPhotoStudentIdx = -1;
 let _cameraStream = null;
-let _capturedPhotoDataUrl = '';(idx) {
+let _cameraFacingMode = 'environment'; // Default to back camera on mobile; ideal falls back gracefully on desktop
+let _capturedPhotoDataUrl = '';
+
+function openStudentPhotoModal(idx) {
   _currentPhotoStudentIdx = (typeof idx === 'number' && idx >= 0) ? idx : 0;
   const list = annualResultsData || [];
   if (!list.length) {
@@ -2797,12 +2800,6 @@ function renderStudentPhotoModalContent() {
 
     <!-- Tab 2: Live Camera -->
     <div id="photo-tab-camera" style="display:none;">
-      <!-- Camera facing toggle -->
-      <div style="display:flex; justify-content:flex-end; margin-bottom:0.4rem;">
-        <button type="button" class="btn btn-secondary btn-sm" id="btn-flip-camera" onclick="flipStudentCamera()" title="Switch between front and back camera" style="display:none; gap:0.3rem; align-items:center;">
-          🔄 <span id="btn-flip-label">Switch to Back Camera</span>
-        </button>
-      </div>
       <div class="camera-stream-box mb-2" id="camera-stream-container">
         <video id="student-camera-video" autoplay playsinline></video>
         <div class="camera-guide-circle"></div>
@@ -2810,6 +2807,7 @@ function renderStudentPhotoModalContent() {
       <canvas id="student-camera-canvas" style="display:none;"></canvas>
       <div class="flex gap-2 justify-center mb-2" style="flex-wrap:wrap;">
         <button type="button" class="btn btn-primary btn-sm" id="btn-start-camera" onclick="startStudentCamera()">▶️ Start Camera</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-switch-camera" onclick="switchStudentCamera()">🔄 ${_cameraFacingMode === 'environment' ? 'Use Front Camera' : 'Use Back Camera'}</button>
         <button type="button" class="btn btn-gold btn-sm" id="btn-snap-camera" onclick="snapStudentCamera()" style="display:none; background:#c9a054; color:#000; font-weight:700;">📸 Snap Photo</button>
         <button type="button" class="btn btn-secondary btn-sm" id="btn-retake-camera" onclick="retakeStudentCamera()" style="display:none;">🔄 Retake</button>
         <button type="button" class="btn btn-danger btn-sm" id="btn-stop-camera" onclick="stopStudentCamera()" style="display:none;">⏹️ Stop Camera</button>
@@ -2835,16 +2833,9 @@ function renderStudentPhotoModalContent() {
   `;
 }
 
-// ── Student Photo Studio (Upload & Live Camera Capture) ────────────────────────
-let _currentPhotoStudentIdx = -1;
-let _cameraStream = null;
-let _capturedPhotoDataUrl = '';
-let _cameraFacingMode = 'environment'; // default: back camera on mobile
-
-async function startStudentCamera(facingMode) {
+async function startStudentCamera() {
   const video = document.getElementById('student-camera-video');
   if (!video) return;
-  if (facingMode) _cameraFacingMode = facingMode;
   try {
     stopStudentCamera();
     _cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -2852,36 +2843,30 @@ async function startStudentCamera(facingMode) {
       audio: false
     });
     video.srcObject = _cameraStream;
-    const startBtn  = document.getElementById('btn-start-camera');
-    const snapBtn   = document.getElementById('btn-snap-camera');
-    const stopBtn   = document.getElementById('btn-stop-camera');
+    video.style.transform = (_cameraFacingMode === 'user') ? 'scaleX(-1)' : 'none';
+    const switchBtn = document.getElementById('btn-switch-camera');
+    if (switchBtn) switchBtn.textContent = _cameraFacingMode === 'environment' ? '🔄 Use Front Camera' : '🔄 Use Back Camera';
+    const startBtn = document.getElementById('btn-start-camera');
+    const snapBtn = document.getElementById('btn-snap-camera');
+    const stopBtn = document.getElementById('btn-stop-camera');
     const retakeBtn = document.getElementById('btn-retake-camera');
-    const flipBtn   = document.getElementById('btn-flip-camera');
-    const flipLabel = document.getElementById('btn-flip-label');
-    if (startBtn)  startBtn.style.display  = 'none';
-    if (snapBtn)   snapBtn.style.display   = 'inline-flex';
-    if (stopBtn)   stopBtn.style.display   = 'inline-flex';
+    if (startBtn) startBtn.style.display = 'none';
+    if (snapBtn) snapBtn.style.display = 'inline-flex';
+    if (stopBtn) stopBtn.style.display = 'inline-flex';
     if (retakeBtn) retakeBtn.style.display = 'none';
-    if (flipBtn)   flipBtn.style.display   = 'inline-flex';
-    if (flipLabel) flipLabel.textContent   = (_cameraFacingMode === 'environment') ? 'Switch to Front Camera' : 'Switch to Back Camera';
     const status = document.getElementById('modal-photo-status');
-    const facing = (_cameraFacingMode === 'environment') ? 'Back (Rear)' : 'Front (Selfie)';
-    if (status) status.textContent = `📷 ${facing} camera active. Frame face in circle and snap photo.`;
+    if (status) status.textContent = `${_cameraFacingMode === 'environment' ? 'Back' : 'Front'} camera active. Frame face in circle and snap photo.`;
   } catch(err) {
-    if (err.name === 'OverconstrainedError' || err.name === 'NotFoundError') {
-      _cameraFacingMode = (_cameraFacingMode === 'environment') ? 'user' : 'environment';
-      toast('Requested camera not found, switching to available camera…', 'info');
-      await startStudentCamera(_cameraFacingMode);
-      return;
-    }
     console.error('Camera error:', err);
     toast('Camera access error: ' + (err.message || 'Permission denied'), 'error');
   }
 }
 
-async function flipStudentCamera() {
+function switchStudentCamera() {
   _cameraFacingMode = (_cameraFacingMode === 'environment') ? 'user' : 'environment';
-  await startStudentCamera(_cameraFacingMode);
+  const switchBtn = document.getElementById('btn-switch-camera');
+  if (switchBtn) switchBtn.textContent = _cameraFacingMode === 'environment' ? '🔄 Use Front Camera' : '🔄 Use Back Camera';
+  startStudentCamera();
 }
 
 function stopStudentCamera() {
@@ -2908,9 +2893,11 @@ function snapStudentCamera() {
   canvas.height = video.videoHeight || 640;
   const ctx = canvas.getContext('2d');
   
-  // Mirror horizontally so image matches the mirrored video preview
-  ctx.translate(canvas.width, 0);
-  ctx.scale(-1, 1);
+  // Mirror horizontally only for front camera so image matches the preview
+  if (_cameraFacingMode === 'user') {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   
   _capturedPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.92);
