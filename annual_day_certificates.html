@@ -1512,6 +1512,7 @@
             <div class="cert-event-block">
               <div class="cert-event-title" style="${eventTitleStyles}">${progName}</div>
               <div class="cert-award-text">${awardTitle}</div>
+              <div class="cert-event-name-line">${r.EventName}</div>
             </div>
             
             ${centerSectionHtml}
@@ -1519,10 +1520,9 @@
             <div class="${nameClasses}" style="${nameStyles}">${r.StudentName}</div>
 
             <div class="cert-body" style="${bodyStyles}">
-              <div class="cert-certify" style="${certifyStyles}">This is to certify that the above mentioned student of</div>
-              ${r.Department ? `<div class="cert-dept-line" style="${bodyStyles}">${r.Department} Department</div>` : ''}
+              <div class="cert-certify" style="${certifyStyles}">This is to certify that <strong>${r.StudentName}</strong> has been awarded <strong>${posText}</strong>${r.Department ? ` in the Department of <strong>${r.Department}</strong>` : ''}</div>
+              <div class="cert-achievement-line" style="${bodyStyles}">for the event <strong>"${r.EventName}"</strong></div>
               ${shouldPrintHouse ? `<div class="cert-house-line" style="color: ${houseColor}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${r.House} House</div>` : ''}
-              <div class="cert-achievement-line">has secured <strong>${posText}</strong> in <strong>"${r.EventName}"</strong></div>
             </div>
 
             <div class="cert-prestigious-wording" style="${wordingStyles}">
