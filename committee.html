@@ -1829,6 +1829,22 @@ async function loadSettings() {
       bgCont.style.display = 'block';
     }
   }
+  // Load saved Annual Day awardees from Google Sheet (or local cache) if present
+  const savedAnnual = loadAnnualAwardeesFromSheet(s);
+  if (savedAnnual && savedAnnual.length > 0 && activeAnnualCertSource !== 'csv') {
+    annualResultsData = savedAnnual;
+    activeAnnualCertSource = 'sheet';
+    const modeBadge = document.getElementById('annual-cert-list-mode-badge');
+    if (modeBadge) {
+      modeBadge.textContent = 'Saved in Sheet';
+      modeBadge.classList.remove('hidden');
+    }
+    const resetBtn = document.getElementById('annual-cert-reset-btn');
+    if (resetBtn) resetBtn.classList.remove('hidden');
+    populateAnnualSelects();
+    filterAnnualCertificates();
+  }
+
   updateAnnualLivePreview();
 
   // Populate House select dynamically in Branding tab
@@ -2692,13 +2708,16 @@ function renderAnnualCertificatesList(list) {
     const winJson = JSON.stringify(r).replace(/"/g, '&quot;');
     const globalIdx = annualResultsData.indexOf(r);
     const photoIdx = globalIdx >= 0 ? globalIdx : i;
-    const photoThumb = r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl, 100) : '';
+    const photoRaw = r.PhotoUrl || '';
+    const photoThumb = r._localPhotoDataUrl || (photoRaw ? getGoogleDriveThumbUrl(photoRaw, 100) : '');
+    const photoFallback = photoRaw ? getGoogleDriveFallbackUrl(photoRaw, 200) : '';
+    const safeFallback = photoFallback.replace(/'/g, "\\'");
 
     return `<tr>
       <td style="text-align:center;">
-        ${r.PhotoUrl ? `
+        ${photoThumb ? `
           <div style="display:inline-flex; align-items:center; gap:0.35rem;">
-            <img src="${photoThumb}" alt="Photo" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid #c9a054; background:#fff; cursor:pointer;" onclick="openStudentPhotoModal(${photoIdx})" title="Click to view or change photo">
+            <img src="${photoThumb}" alt="Photo" onerror="if(!this.dataset.fb&&'${safeFallback}'){this.dataset.fb='1';this.src='${safeFallback}';return;}this.style.display='none';" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid #c9a054; background:#fff; cursor:pointer;" onclick="openStudentPhotoModal(${photoIdx})" title="Click to view or change photo">
             <button type="button" class="btn btn-secondary btn-sm" style="padding:0.15rem 0.35rem; font-size:0.7rem;" onclick="openStudentPhotoModal(${photoIdx})" title="Change photo">📷</button>
           </div>
         ` : `
@@ -2923,12 +2942,12 @@ function handleModalFileSelect(input) {
   const file = input.files && input.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
-    _capturedPhotoDataUrl = e.target.result;
+  reader.onload = async function(e) {
+    _capturedPhotoDataUrl = await compressImageDataUrl(e.target.result, 800, 0.88);
     const prev = document.getElementById('modal-preview-img');
     if (prev) prev.src = _capturedPhotoDataUrl;
     const status = document.getElementById('modal-photo-status');
-    if (status) status.textContent = '✅ Image loaded from file! Click "Save to Drive & Link" below.';
+    if (status) status.textContent = '✅ Image loaded & optimized! Click "Save to Drive & Link" below.';
   };
   reader.readAsDataURL(file);
 }
@@ -2979,37 +2998,42 @@ async function saveStudentModalPhoto() {
   try {
     toast(`Saving photo for ${s.StudentName} to Google Drive…`, 'info');
     
-    // Parse base64
-    const parts = _capturedPhotoDataUrl.split(',');
+    // Ensure photo is optimized JPEG before Drive upload
+    const optimizedDataUrl = await compressImageDataUrl(_capturedPhotoDataUrl, 800, 0.88);
+    const parts = optimizedDataUrl.split(',');
     const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
     const cleanStudentName = (s.StudentName || 'student').trim();
+    const cleanFileName = `${cleanStudentName.replace(/[^a-zA-Z0-9_-]/g, '_')}_photo.jpg`;
     const payload = {
       base64: parts[1],
       mimeType: mime,
-      filename: `${cleanStudentName.replace(/[^a-zA-Z0-9_-]/g, '_')}_photo.jpg`,
+      fileName: cleanFileName,
+      filename: cleanFileName,
       studentName: cleanStudentName,
       house: s.House || '',
       dept: s.Department || ''
     };
 
-    let driveUrl = '';
+    let driveThumbUrl = '';
     try {
       const res = await apiUpload('uploadPhoto', payload);
-      if (res && res.url) {
-        driveUrl = res.url;
+      const rawUrl = (res && res.url) ? res.url : (res && (res.fileId || res.id) ? `https://drive.google.com/thumbnail?id=${res.fileId || res.id}&sz=w800` : '');
+      if (rawUrl) {
+        driveThumbUrl = getGoogleDriveThumbUrl(rawUrl, 800);
       }
     } catch(uploadErr) {
       console.warn('Backend Drive upload failed or running in standalone mode:', uploadErr);
     }
 
-    // Set the photo URL (Drive URL or fallback to base64 dataUrl)
-    const finalPhotoUrl = driveUrl || _capturedPhotoDataUrl;
+    // Store Drive thumbnail URL for sheet persistence, plus local Data URL for instant display
+    s._localPhotoDataUrl = optimizedDataUrl;
+    const finalPhotoUrl = driveThumbUrl || optimizedDataUrl;
     s.PhotoUrl = finalPhotoUrl;
 
     // Also persist to Results sheet if EventID exists
-    if (s.EventID && driveUrl) {
+    if (s.EventID && driveThumbUrl) {
       try {
-        await apiPost('saveResultPhoto', { eventId: s.EventID, studentName: cleanStudentName, photoUrl: driveUrl });
+        await apiPost('saveResultPhoto', { eventId: s.EventID, studentName: cleanStudentName, photoUrl: driveThumbUrl });
       } catch(e) {}
     }
 
@@ -3017,7 +3041,14 @@ async function saveStudentModalPhoto() {
     const match = studentsData.find(st => st.Name && st.Name.trim().toLowerCase() === cleanStudentName.toLowerCase());
     if (match) match.PhotoUrl = finalPhotoUrl;
 
-    toast(`✅ Photo successfully updated for ${s.StudentName}!`, 'success');
+    // Persist updated Annual Day list + photo URL to Google Sheet
+    try {
+      await saveAnnualAwardeesToSheet(annualResultsData);
+    } catch(sheetErr) {
+      console.warn('Could not persist awardees list to Sheet:', sheetErr);
+    }
+
+    toast(`✅ Photo saved${driveThumbUrl ? ' to Drive (thumbnail)' : ''} & linked for ${s.StudentName}!`, 'success');
     
     // Stop camera and close modal
     stopStudentCamera();
@@ -3085,13 +3116,24 @@ async function loadAnnualCertCSV() {
 
     annualResultsData = mapped;
     activeAnnualCertSource = 'csv';
-    toast(`Successfully loaded ${annualResultsData.length} awardees from CSV!`, 'success');
 
-    document.getElementById('annual-cert-list-mode-badge').classList.remove('hidden');
+    const modeBadge = document.getElementById('annual-cert-list-mode-badge');
+    if (modeBadge) {
+      modeBadge.textContent = 'Saved in Sheet';
+      modeBadge.classList.remove('hidden');
+    }
     document.getElementById('annual-cert-reset-btn').classList.remove('hidden');
 
     populateAnnualSelects();
     filterAnnualCertificates();
+
+    try {
+      await saveAnnualAwardeesToSheet(annualResultsData);
+      toast(`✅ Loaded ${annualResultsData.length} awardees & saved to Google Sheet!`, 'success');
+    } catch(sheetErr) {
+      console.warn('Could not save awardees to Sheet:', sheetErr);
+      toast(`Loaded ${annualResultsData.length} awardees (saved locally)`, 'success');
+    }
   } catch(e) {
     toast('Error loading CSV: ' + e.message, 'error');
   }
@@ -3117,9 +3159,10 @@ function downloadSampleAnnualCSV() {
   toast('Sample CSV downloaded!', 'success');
 }
 
-function resetAnnualCertListSource() {
+async function resetAnnualCertListSource() {
   activeAnnualCertSource = 'default';
   annualResultsData = [];
+  await clearAnnualAwardeesFromSheet();
   initAnnualAwardees();
   
   document.getElementById('annual-cert-list-mode-badge').classList.add('hidden');
@@ -3351,7 +3394,8 @@ async function saveAnnualDaySettings() {
 }
 
 async function renderAnnualCertificateHTML(r, s) {
-  const studentPhotoThumb = r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl) : '';
+  const studentPhotoThumb = r._localPhotoDataUrl || (r.PhotoUrl ? getGoogleDriveThumbUrl(r.PhotoUrl, 600) : '');
+  const studentPhotoFallback = r.PhotoUrl ? getGoogleDriveFallbackUrl(r.PhotoUrl, 600) : '';
   const houseKey = 'logo_' + String(r.House || '').trim().toUpperCase();
   const houseLogoUrl = s[houseKey] || '';
   const houseLogoThumb = houseLogoUrl ? getGoogleDriveThumbUrl(houseLogoUrl) : '';
@@ -3492,7 +3536,8 @@ async function renderAnnualCertificateHTML(r, s) {
   let centerContent = '';
   if (centerDisplay === 'photo') {
     if (finalStudentPhoto) {
-      centerContent = `<img src="${finalStudentPhoto}" alt="Student Photo" style="width: 100%; height: 100%; object-fit: cover;">`;
+      const safeFb = (studentPhotoFallback || '').replace(/'/g, "\\'");
+      centerContent = `<img src="${finalStudentPhoto}" alt="Student Photo" onerror="if(!this.dataset.fb&&'${safeFb}'){this.dataset.fb='1';this.src='${safeFb}';return;}" style="width: 100%; height: 100%; object-fit: cover;">`;
     } else {
       centerContent = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; font-weight: bold; text-transform: uppercase;">
